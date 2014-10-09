@@ -6,10 +6,17 @@ var PNGDiff   = require("png-diff");
 var colors    = require("colors");
 
 var site_list = require(__dirname + "/sites.json");
+var setup     = require(__dirname + "/setup");
 var render    = require(__dirname + "/render");
 
 
+// Ensure directory structure exists
+setup.directories();
+setup.files();
+
 // Test Variables
+var log_stamp     = (new Date).toISOString() + ' : ' + (process.argv[2] || 'build not specified');
+var build         = process.argv[2] || 'build not specified';
 var capabilities  = { 'browserName' : 'chrome' };
 var results       = [];
 var waiting       = 0;
@@ -26,8 +33,11 @@ async.each(uri_list["urn"], function(i, step) {
 function renderResults() {
   if (!waiting) {
     var timestamp = (new Date).toISOString();
-    html = render.render(results, timestamp);
+    html = render.render(results, timestamp, build);
     fs.writeFileSync("./output.html", html);
+    fs.appendFile('executions.log', log_stamp + '\n', function (err) {
+      if (err) { console.log("Error appending version to execution log " + err); }
+    });
   }
 }
 
@@ -48,7 +58,7 @@ function collectScreen(urn, step) {
     var filename = name || 'screenshot.png';
     var filepath = __dirname + "/screenshots/new/";
     fs.writeFileSync(filepath + filename, data, 'base64');
-    console.log("\nCapturing latest screens from: \n\t" + uri.green)
+    console.log("\nCapturing latest screens from: \n\t" + uri.green);
   }
 
   // Spawn Driver(s)
@@ -83,12 +93,12 @@ function collectScreen(urn, step) {
       if (exists) {
         PNGDiff.outputDiff(old_screenshot, new_screenshot, diff_screenshot, function(err, diffMetric) {
           if (err) {
-            console.log("Error comparing screenshot ".red + err);
-            testResult.result = 'FAIL';
-            testResult.explanation = "Error comparing screenshots" + err;
+            console.log("Result: \n\t" + "Error comparing screenshot ".red + err);
+            testResult.result = 'ERROR';
+            testResult.explanation = "Error comparing screenshots: " + err;
             results.push(testResult);
           } else {
-            console.log('Comparing: \n\t' + old_screenshot.yellow + ' with ' + new_screenshot.yellow)
+            console.log('Comparing: \n\t' + old_screenshot.yellow + ' with ' + new_screenshot.yellow);
             if (diffMetric === 1) {
               console.log("Result: \n\t" + "Difference detected.".red + " Saved to " + diff_screenshot + "\n");
               testResult.result = 'FAIL';
