@@ -1,10 +1,11 @@
 var fs    = require('fs');
 var swig  = require('swig');
 
-function render(res, time) {
+function render(res, time, build) {
   return swig.renderFile(__dirname + '/template.html', {
     results: res,
-    time: time
+    time: time,
+    build: build
   });
 }
 
