@@ -14,7 +14,7 @@ HTML reports will be generated for the comparisons, flagging instances in which 
 
 * clone repository
 * install dependencies
-* node driver.js
+* node driver.js <build number>
 
 
 ## TODO
@@ -23,7 +23,6 @@ HTML reports will be generated for the comparisons, flagging instances in which 
 * Include capabilities for multiple browsers in driver.js
 * Strip image file names of unexpected characters
 * On failure, allow new image to be set as the master for next tests
-* Create screenshot folders if they don't exist
 * Ensure sites.json info is valid
 * Clean up HTML mess
 
