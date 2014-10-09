@@ -1,37 +1,47 @@
 <html>
 <body style="background-color:#F3F3F3; font-family:arial;">
+
   <div id="header">
     <h2 style="text-align:center;">Screen Capture Comparison Results</h2>
+    <div id="run-details">
+      <div id="timestamp" style="text-align:center">
+        <b>Generated at:</b> <i>{{time}}</i>
+      </div>
+      <div id="version" style="text-align:center">
+        <b>Build:</b> <i>{{build}}</i>
+      </div>
+    </div>
   </div>
+
   <div id="results" style="margin-top: 10px; margin-bottom: 30px;">
     {% for testResult in results %}
       <div style="margin:10px; padding:10px; border-radius:3px; box-shadow: 0 0 1px #777; background-color:white; ">
         <h4 style="margin:5px; display:inline;">
           <span id="min-max-{{loop.index}}" onclick="minmax({{loop.index}})">[ &ndash; ]</span>
         </h4>
-            {% if testResult.result == "FAIL" %}
-              <h4 style="display:inline;">
-                <span style="color:red;">FAIL : </span>{{ testResult.uri }}
-              </h4>
-              <div id="explanation-{{loop.index}}" style="margin-left:50px;">
-                <p>
-                  => <i>{{testResult.explanation}}</i>
-                </p>
-              </div>
-            {% elseif testResult.result == "N/A" %}
-              <h4 style="display:inline;">
-                <span style="color:#777777;">N/A :</span>{{ testResult.uri }}
-              </h4>
-              <div id="explanation-{{loop.index}}" style="margin-left:50px;">
-                <p>
-                  => <i>{{testResult.explanation}}</i>
-                </p>
-              </div>
-            {% else %}
-              <h4 style="display:inline;">
-                <span style="color:green;">PASS :</span>{{ testResult.uri }}
-              </h4>
-            {% endif %}
+          {% if testResult.result == "FAIL" or testResult.result == "ERROR" %}
+            <h4 style="display:inline;">
+              <span style="color:red;">{{testResult.result}} : </span>{{ testResult.uri }}
+            </h4>
+            <div id="explanation-{{loop.index}}" style="margin-left:50px;">
+              <p>
+                => <i>{{testResult.explanation}}</i>
+              </p>
+            </div>
+          {% elseif testResult.result == "N/A" %}
+            <h4 style="display:inline;">
+              <span style="color:#777777;">N/A :</span>{{ testResult.uri }}
+            </h4>
+            <div id="explanation-{{loop.index}}" style="margin-left:50px;">
+              <p>
+                => <i>{{testResult.explanation}}</i>
+              </p>
+            </div>
+          {% else %}
+            <h4 style="display:inline;">
+              <span style="color:green;">PASS :</span>{{ testResult.uri }}
+            </h4>
+          {% endif %}
 
         {% if testResult.result == "FAIL" %}
         <div id="images-{{loop.index}}">
@@ -69,17 +79,14 @@
         {% endif %}
       </div>
     {% endfor %}
-
-  </div>
-  <div id="timestamp" style="text-align:center">
-    Generated at: {{time}}
   </div>
 
   <script>
     function minmax(index){
       document.getElementById("explanation-" + index).style.display = (document.getElementById("explanation-" + index).style.display != 'none' ? 'none' : '');
       document.getElementById("images-" + index).style.display = (document.getElementById("images-" + index).style.display != 'none' ? 'none' : '');
-      document.getElementById("min-max-" + index).innerHTML = (document.getElementById("images-" + index).style.display != 'none' ? "[ &ndash; ]" : "[ + ]");
+      document.getElementById("min-max-" + index).innerHTML = (document.getElementById("explanation-" + index).style.display != 'none' ? "[ &ndash; ]" : "[ + ]");
     }
   </script>
+
 </body>
