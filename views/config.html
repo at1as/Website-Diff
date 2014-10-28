@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>Website Diff Tool | Configuration</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <script type="text/javascript" src="/js/spin.min.js"></script>
+  </head>
+
+  <body role="document">
+
+    <div class="navbar-collapse">
+      <ul class="nav navbar-nav" style="display:inline-block;">
+        <li style="display:inline-block;" class="active"><a href="./config"><b>Configuration</b></a></li>
+        <li style="display:inline-block;"><a href="./report">Current Report </a></li>
+        <li style="display:inline-block;"><a href="./reports">Run Log</a></li>
+      </ul>
+    </div>
+
+    <div id="page-header">
+      <h3 style="text-align:center;">Test Configuration and Execution</h3>
+    </div>
+
+    <div id="main" style="margin: 0 auto; width:500px;overflow:hidden; margin-top:40px; margin-left:auto; margin-right:auto; vertical-align:text-middle; padding:3px;">
+      <!--TEST:BEGIN-->
+
+      <div class="seperator">Test Environment</div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Browser<span class="required">*</span></label>
+        <select class="form-control" id="browser" name="browser" style="display:inline-block; float:none; width:160px;">
+          <option selected>{{config.browser}}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Resolution (w <i>x</i> h)</label>
+        <input class="form-control" id="width" type="number" min="1" max="9999" style="display:inline-block; float:none; width:72px;" value="{{config.width}}">
+        <span style="margin-right:2px; margin-left:2px;">x</span>
+        <input class="form-control" id="height" type="number" min="1" max="9999" style="display:inline-block; float:none; width:72px;" value="{{config.height}}">
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Protocol<span class="required">*</span></label>
+        <select class="form-control" id="protocol" name="protocol" style="display:inline-block; float:none; width:160px;">
+          <option selected>http://</option>
+          <option>https://</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">URL<span class="required">*</span></label>
+        <input class="form-control" name="url" id="url" style="display:inline-block; float:none; width:300px;" value={{config.url}}>
+      </div>
+      <div class="form-row">
+        <label class="form-label" id="urn" name="urn" style="display:inline-block; width:150px; text-align:right;">URN(s)<span class="required">*</span></label>
+        <input class="form-control" style="display:inline-block; float:none; width:300px;" value={{config.urn}}>
+      </div>
+      <div class="form-row" id="add_button">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;"></label>
+        <button class="form-control btn btn-primary btn-block" style="display:inline-block; width:160px;" type="submit" onclick="add_urn()">Add</button>
+      </div>
+
+      <div class="seperator">Login Parameters</div>
+      <p style="margin-bottom:30px; margin-left:20px; color:#777"><i>For products that require log in to access the URNs listed above, enter the parameters here, along with the HTML id="" tag of the username field and password field.</i></p>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Username</label>
+        <input class="form-control" name="usr" id="usr" style="display:inline-block; float:none; width:160px;">
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password</label>
+        <input class="form-control" type="password" name="pwd" id="pwd" style="display:inline-block; float:none; width:160px;">
+        <input type="checkbox" id="pwd_disp_toggle" style="margin-left:10px;" onclick="pwd_disp()"><label for="pwd_disp_toggle" style="margin-left:5px; color:#777">Hide</label>
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Login URL</label>
+        <input class="form-control" name="cred_url" id="cred_url" style="display:inline-block; float:none; width:300px;">
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password Field ID</label>
+        <input class="form-control" name="cred_usr_id" id="cred_usr_id" style="display:inline-block; float:none; width:300px;">
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password Field ID</label>
+        <input class="form-control" name="cred_pwd_id" id="cred_pwd_id" style="display:inline-block; float:none; width:300px;">
+      </div>
+
+      <div class="seperator">Test Execution Tag</div>
+      <div class="form-row">
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Build Number</label>
+        <input class="form-control" name="build" id="build" style="display:inline-block; float:none; width:300px;">
+      </div>
+
+      <!--TEST:END-->
+    </div>
+
+    <div id="urn_button_div" style="width:200px; margin-left:auto; margin-right:auto; padding-top:40px; padding-bottom:40px;">
+      <button id="add_urn" class="btn btn-lg btn-primary btn-block" type="submit" onclick="execute(); modal_toggle()">Generate</button>
+    </div>
+
+
+
+    <!-- MODAL:BEGIN -->
+    <div id="backdrop" style="display:none">
+      <div class="centered" id="modal-alert" tabindex="-1" role="dialog" style="display:none; z-index:11">
+          <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
+            <h4><strong>Collecting Screenshots...</strong></h4>
+            <p>Hang tight, this could take a while</p>
+            <div id="content"></div>
+          </div>
+      </div>
+    </div>
+    <!-- MODAL:END -->
+
+
+    <script type="text/javascript">
+
+      function add_urn(){
+
+        var container = document.createElement('div');
+        container.className = "form-row";
+        var label = document.createElement('label');
+        label.className = "form-label";
+        label.style = "display:inline-block; width:150px; text-align:right;";
+        input = document.createElement('input');
+        input.className = "form-control";
+        input.style = "display:inline-block; float:none; width:300px;";
+
+        container.appendChild(label);
+        container.appendChild(input);
+
+        document.getElementById('add_button').parentNode.insertBefore(container, document.getElementById('add_button'));
+      }
+
+      function execute() {
+
+        modal_toggle();
+
+        var test_env = {}
+        test_env.browser  = document.getElementById('browser').value;
+        test_env.width    = document.getElementById('width').value;
+        test_env.height   = document.getElementById('height').value;
+        test_env.protocol = document.getElementById('protocol').value;
+        test_env.url      = document.getElementById('url').value;
+        test_env.urn      = document.getElementById('urn').value;
+        test_env.build    = document.getElementById('build').value;
+
+
+        var url     = "/execute";
+        //var data = JSON.stringify({'build':build, 'url':url, });
+        var data    = JSON.stringify(test_env);
+        var client  = new XMLHttpRequest();
+
+        client.open("POST", url, false);
+        client.setRequestHeader("Content-Type", "application/json");
+        client.send(data);
+
+        if (client.status == 200)
+            window.location.replace("/");
+        else
+            alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+      }
+
+      function modal_toggle() {
+
+        var backdrop = document.getElementById('backdrop');
+        var modal = document.getElementById('modal-alert');
+
+        if (backdrop.style.display = 'none') {
+          document.getElementById('backdrop').style.display = '';
+          document.getElementById('modal-alert').style.display = '';
+
+          var opts = {
+            lines: 13, // The number of lines to draw
+            length: 12, // The length of each line
+            width: 6, // The line thickness
+            radius: 12, // The radius of the inner circle
+            corners: 1, // Corner roundness (0..1)
+            rotate: 0, // The rotation offset
+            direction: 1, // 1: clockwise, -1: counterclockwise
+            color: '#000', // #rgb or #rrggbb or array of colors
+            speed: 1, // Rounds per second
+            trail: 60, // Afterglow percentage
+            shadow: false, // Whether to render a shadow
+            hwaccel: false, // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9, // The z-index (defaults to 2000000000)
+            top: '50%', // Top position relative to parent
+            left: '50%' // Left position relative to parent
+          };
+
+          var target = document.getElementById('content');
+          var spinner = new Spinner(opts).spin(target);
+        } else {
+          spinner.stop();
+          document.getElementById('backdrop').style.display = 'none';
+          document.getElementById('modal-alert').style.display = 'none';
+        }
+      }
+
+      function pwd_disp(){
+        var pwd_field = document.getElementById('pwd');
+        if (pwd.type == "password") {
+          pwd.type = "";
+        } else {
+          pwd.type = "password";
+        }
+      }
+
+    </script>
+  </body>
+</html>
