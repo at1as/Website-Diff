@@ -4,7 +4,7 @@ var fs  = require('fs');
 function createDir(directory) {
    if (!fs.existsSync(directory)){
      fs.mkdirSync(directory, 0766, function(err){
-       if(err) { console.log(err); }
+       if(err) console.log(err);
      });
    }
 }
@@ -12,16 +12,18 @@ function createDir(directory) {
 function createFile(filename) {
   if (!fs.existsSync(filename)) {
     fs.writeFileSync(filename, '', function(err){
-      if(err) { console.log(err); }
+      if(err) console.log(err);
     });
   }
 }
 
 function createDirs() {
-  createDir('screenshots');
-  createDir('screenshots/new');
-  createDir('screenshots/old');
-  createDir('screenshots/results');
+  createDir('./public/assets');
+  createDir('./public/assets/images');
+  createDir('./public/assets/images/screenshots');
+  createDir('./public/assets/images/screenshots/new');
+  createDir('./public/assets/images/screenshots/old');
+  createDir('./public/assets/images/screenshots/results');
 }
 
 function createFiles() {
