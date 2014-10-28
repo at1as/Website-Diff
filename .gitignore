@@ -1,5 +1,6 @@
 .DS_Store
-output.html
+node_modules
+/views/output.html
+/public/assets/images/screenshots/
 executions.log
-screenshots/
 package.json
