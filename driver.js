@@ -9,20 +9,18 @@ var setup     = require(__dirname + "/setup");
 var render    = require(__dirname + "/render");
 
 
-function run(build, done) {
+function run(body, done) {
 
   // Ensure directory structure exists
   setup.directories();
   setup.files();
 
   // Test Variables
-  var cur_build     = build || 'build not specified';
+  var cur_build     = body.build || 'build not specified';
   var log_stamp     = 'Time : ' + (new Date).toISOString() + '\nBuild : ' + (cur_build || 'build not specified');
-  var capabilities  = { 'browserName' : 'chrome' };
+  var capabilities  = { 'browserName' : body.browser };
   var results       = [];
   var waiting       = 0;
-  var browser_width = 980;
-  var browser_height = 1027;
   var status        = {'pass_count':0, 'fail_count':0, 'na_count':0, 'error_count':0, 'resolved_count':0, 'total':0}
   var test_started  = false;
 
@@ -36,7 +34,7 @@ function run(build, done) {
   }
 
   // Loop through each URI
-  async.each(uri_list['urn'], function(i, step) {
+  async.each(body.urn, function(i, step) {
     collectScreen(i, step);
   });
 
@@ -55,9 +53,8 @@ function run(build, done) {
         if (err) console.log('Error appending version to execution log ' + err);
       });
 
-      temp = [results, timestamp, cur_build, status];
-
-      return done(temp);
+      run_details = [results, timestamp, cur_build, status];
+      return done(run_details);
     }
   }
 
@@ -68,10 +65,8 @@ function run(build, done) {
     waiting ++;
     test_started = true;
 
-    var proto       = uri_list["protocol"] + "://";
-    var url         = proto + uri_list["url"];
-    var uri         = url + urn;
-    var uri_no_pro  = uri_list["url"] + urn;
+    var uri         = body.protocol + body.url + urn;
+    var uri_no_pro  = body.url + urn;
     var uri_safe    = uri_no_pro.replace(/\//g, "-");
 
     // Collect Screenshots
@@ -83,12 +78,11 @@ function run(build, done) {
     }
 
     // Spawn Driver(s)
-
     var driver = new webdriver.Builder().
         withCapabilities(capabilities).
         build();
 
-    driver.manage().window().setSize(browser_width, browser_height);
+    driver.manage().window().setSize(parseInt(body.width), parseInt(body.height));
 
     // Navigate Driver to URL
     driver.get(uri);
@@ -121,6 +115,8 @@ function run(build, done) {
               testResult.explanation = "Error comparing screenshots: \n" + err;
               results.push(testResult);
               status.error_count ++;
+              waiting --;
+              //renderResults();
             } else {
               console.log('Comparing: \n\t' + old_screenshot.yellow + ' with ' + new_screenshot.yellow);
               if (diffMetric === 1) {
@@ -129,11 +125,13 @@ function run(build, done) {
                 testResult.explanation = "Difference Detected";
                 results.push(testResult);
                 status.fail_count ++;
+                waiting --;
               } else {
                 console.log("Result: \n\t" + "No difference.\n".green);
                 testResult.result = 'PASS';
                 results.push(testResult);
                 status.pass_count ++;
+                waiting --;
               }
             }
             renderResults();
@@ -146,14 +144,14 @@ function run(build, done) {
           testResult.result = 'N/A';
           testResult.explanation = "Nothing to compare with. Setting to master for next run.";
           results.push(testResult);
-          renderResults();
           status.na_count ++;
+          renderResults();
+          waiting --;
         }
-        waiting --;
+        //waiting --;
         step();
       });
     });
-
     // Per test teardown - Quit Driver
     driver.quit();
   }

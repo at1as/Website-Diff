@@ -19,10 +19,8 @@ HTML reports will be generated for the comparisons, flagging instances in which 
 
 ## TODO
 
-* Include multiple URLs in sites.json
 * Include capabilities for multiple browsers in driver.js
 * Strip image file names of unexpected characters
-* Clean up HTML mess
 
 
 ## Disclaimer

@@ -14,7 +14,7 @@
       <ul class="nav navbar-nav" style="display:inline-block;">
         <li style="display:inline-block;"><a href="./config">Configuration</a></li>
         <li style="display:inline-block;"><a href="./report">Current Report</a></li>
-        <li style="display:inline-block;"><a href="./reports"><b>Run Log</b></a></li>
+        <li style="display:inline-block;"><a href="./reports"><b>Run History</b></a></li>
       </ul>
     </div>
 
@@ -31,8 +31,13 @@
     </div>
 
     <div id="log-operations">
-      <button class="btn btn-primary btn-block" onclick="clear_logs()">Clear Log</button>
-      <button class="btn btn-primary btn-block" onclick="download_logs()">Download Log</button>
+      <div id="clear_buttons">
+        <button class="btn btn-primary btn-block" onclick="clear_screens()">Clear All Screenshots</button>
+        <button class="btn btn-primary btn-block" onclick="clear_logs()">Clear Logs</button>
+      </div>
+      <div id="save_buttons" style="margin-top:5px;">
+        <button class="btn btn-primary btn-block"onclick="download_logs()">Download Log</button>
+      </div>
     </div>
 
 
@@ -53,6 +58,10 @@
           location.reload();
         else
           console.log("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+      }
+
+      function clear_screens(){
+        // TODO
       }
     </script>
   </body>

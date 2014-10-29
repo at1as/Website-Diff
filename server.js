@@ -21,13 +21,13 @@ app.use(bodyParser.json());
 port = process.env.PORT || 8080;
 report_generated = false;
 test_data = [];
-last_config = {'browser':'chrome','width':1000,'height':1000, url:'www.google.com/', urn: 'plus'}
+
+// TODO: Save and retreive tehse
+last_config = {'browser':['chrome', 'phantomjs'],'width':1000,'height':1000, url:'www.google.com/', urn: ['plus']}
 
 
 // Load configuration page on start
 app.get('/', function (req, res) {
-  //res.render('config.html', {a:'aab'});
-  //res.render('output');
   res.render('template', {
     results:  test_data[0],
     time:     test_data[1],
@@ -37,9 +37,9 @@ app.get('/', function (req, res) {
   });
 });
 
-// Report
+
+// Report (from last run)
 app.get('/report', function (req, res) {
-  console.log(JSON.stringify(test_data[3], null, 4));
   res.render('template', {
     results:  test_data[0],
     time:     test_data[1],
@@ -51,6 +51,7 @@ app.get('/report', function (req, res) {
 
 
 // Set failed test to new master
+// TODO : Update Log Entries
 app.post('/master', function (req, res) {
   previous  = 'public' + req.body.previous;
   current   = 'public' + req.body.current;
@@ -63,7 +64,6 @@ app.post('/master', function (req, res) {
   test_data[3].fail_count -= 1;
   test_data[3].resolved_count += 1;
 
-  // TODO : Update Log Entries
   res.status(200).end();
 });
 
@@ -77,21 +77,16 @@ app.get('/config', function (req, res) {
 // Execute a new test
 app.post('/execute', function (req, res) {
   last_config = req.body;
-  build = req.body.build;
+  build     = req.body.build;
+  protocol  = req.body.protocol;
+  url       = req.body.url;
 
-  driver.run(build, function(done){
+  console.log(JSON.stringify(req.body));
+  driver.run(req.body, function(done){
 
     test_data = done || [];
-    console.log('r[0] : ' + JSON.stringify(done[0], null, 4));
-    console.log('r[1] : ' + done[1]);
-    console.log('r[2] : ' + done[2]);
-    console.log('r[3] : ' + JSON.stringify(done[3], null, 4));
-
     report_generated = true;
-    //res.render(html);
-    //fs.writeFileSync("./views/output.html",
-    //res.render('template.html', {
-    //swig.renderFile('views/template.html', {
+
     res.render('template', {
       results:  done[0],
       time:     done[1],
@@ -99,9 +94,6 @@ app.post('/execute', function (req, res) {
       status:   done[3],
       executed: true
     });
-  //);
-  //res.render('template', { executed: report_generated});
-  //res.redirect('/report');
   });
 });
 
@@ -138,7 +130,7 @@ app.delete('/execution-log', function(req, res) {
       if (err) {
         res.render('reports', { log_entries: 'Error retrieving logs' });
       }
-      res.render('reports', { log_entries: data.split("\n") });
+      res.render('reports', { log_entries: data.split('\n') });
     });
   });
 });

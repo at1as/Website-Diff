@@ -15,7 +15,7 @@
       <ul class="nav navbar-nav" style="display:inline-block;">
         <li style="display:inline-block;" class="active"><a href="./config"><b>Configuration</b></a></li>
         <li style="display:inline-block;"><a href="./report">Current Report </a></li>
-        <li style="display:inline-block;"><a href="./reports">Run Log</a></li>
+        <li style="display:inline-block;"><a href="./reports">Run History</a></li>
       </ul>
     </div>
 
@@ -24,13 +24,20 @@
     </div>
 
     <div id="main" style="margin: 0 auto; width:500px;overflow:hidden; margin-top:40px; margin-left:auto; margin-right:auto; vertical-align:text-middle; padding:3px;">
-      <!--TEST:BEGIN-->
 
-      <div class="seperator">Test Environment</div>
+
+      <!--TEST:BEGIN-->
+      <div class="seperator">
+        <span class="min_max_content">[ &ndash; ] </span>
+        Test Environment
+      </div>
+
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Browser<span class="required">*</span></label>
         <select class="form-control" id="browser" name="browser" style="display:inline-block; float:none; width:160px;">
-          <option selected>{{config.browser}}</option>
+          {% for browser in config.browser %}
+            <option selected>{{browser}}</option>
+          {% endfor %}
         </select>
       </div>
       <div class="form-row">
@@ -42,8 +49,13 @@
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Protocol<span class="required">*</span></label>
         <select class="form-control" id="protocol" name="protocol" style="display:inline-block; float:none; width:160px;">
-          <option selected>http://</option>
-          <option>https://</option>
+          {% if config.protocol == "https://" %}
+            <option>http://</option>
+            <option selected>https://</option>
+          {% else %}
+            <option selected>http://</option>
+            <option>https://</option>
+          {% endif %}
         </select>
       </div>
       <div class="form-row">
@@ -51,15 +63,16 @@
         <input class="form-control" name="url" id="url" style="display:inline-block; float:none; width:300px;" value={{config.url}}>
       </div>
       <div class="form-row">
-        <label class="form-label" id="urn" name="urn" style="display:inline-block; width:150px; text-align:right;">URN(s)<span class="required">*</span></label>
-        <input class="form-control" style="display:inline-block; float:none; width:300px;" value={{config.urn}}>
-      </div>
-      <div class="form-row" id="add_button">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;"></label>
-        <button class="form-control btn btn-primary btn-block" style="display:inline-block; width:160px;" type="submit" onclick="add_urn()">Add</button>
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right; vertical-align:top;">URN(s)<span class="required">*</span></label>
+        <textarea class="form-control" id="urns" style="display:inline-block; float:none; width:300px;" wrap="off" rows="5">{% for urn in config.urn %}{{urn}}&#13;&#10;{% endfor %}</textarea>
       </div>
 
-      <div class="seperator">Login Parameters</div>
+
+      <div class="seperator">
+        <span class="min_max_content">[ &ndash; ] </span>
+        Login Parameters
+      </div>
+
       <p style="margin-bottom:30px; margin-left:20px; color:#777"><i>For products that require log in to access the URNs listed above, enter the parameters here, along with the HTML id="" tag of the username field and password field.</i></p>
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Username</label>
@@ -68,7 +81,7 @@
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password</label>
         <input class="form-control" type="password" name="pwd" id="pwd" style="display:inline-block; float:none; width:160px;">
-        <input type="checkbox" id="pwd_disp_toggle" style="margin-left:10px;" onclick="pwd_disp()"><label for="pwd_disp_toggle" style="margin-left:5px; color:#777">Hide</label>
+        <input type="checkbox" id="pwd_disp_toggle" style="margin-left:10px;" onclick="pwd_disp()"><label for="pwd_disp_toggle" style="margin-left:5px; color:#777">Show</label>
       </div>
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Login URL</label>
@@ -83,7 +96,12 @@
         <input class="form-control" name="cred_pwd_id" id="cred_pwd_id" style="display:inline-block; float:none; width:300px;">
       </div>
 
-      <div class="seperator">Test Execution Tag</div>
+
+      <div class="seperator">
+        <span class="min_max_content">[ &ndash; ] </span>
+        Test Execution Tag
+      </div>
+
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Build Number</label>
         <input class="form-control" name="build" id="build" style="display:inline-block; float:none; width:300px;">
@@ -113,7 +131,11 @@
 
     <script type="text/javascript">
 
+      var urn_count = 0;
+
       function add_urn(){
+
+        urn_count++;
 
         var container = document.createElement('div');
         container.className = "form-row";
@@ -123,6 +145,7 @@
         input = document.createElement('input');
         input.className = "form-control";
         input.style = "display:inline-block; float:none; width:300px;";
+        input.id = "urn" + urn_count;
 
         container.appendChild(label);
         container.appendChild(input);
@@ -133,19 +156,33 @@
       function execute() {
 
         modal_toggle();
-
         var test_env = {}
+
+        // Environment Vars
         test_env.browser  = document.getElementById('browser').value;
         test_env.width    = document.getElementById('width').value;
         test_env.height   = document.getElementById('height').value;
         test_env.protocol = document.getElementById('protocol').value;
         test_env.url      = document.getElementById('url').value;
-        test_env.urn      = document.getElementById('urn').value;
+        test_env.urn      = []
+
+        // Test Vars
         test_env.build    = document.getElementById('build').value;
 
+        // Ensure Data formatting correct
+        if (test_env.url.slice(-1) != "/") {
+          test_env.url = test_env.url + "/";
+        }
 
+        urn_list = document.getElementById('urns').value.split('\n');
+        for(i=0;i<urn_list.length;i++){
+          if (urn_list[i] != "") {
+            test_env.urn.push(urn_list[i]);
+          }
+        }
+
+        // Issue request
         var url     = "/execute";
-        //var data = JSON.stringify({'build':build, 'url':url, });
         var data    = JSON.stringify(test_env);
         var client  = new XMLHttpRequest();
 
@@ -169,20 +206,14 @@
           document.getElementById('modal-alert').style.display = '';
 
           var opts = {
-            lines: 13, // The number of lines to draw
+            lines: 13,  // The number of lines to draw
             length: 12, // The length of each line
-            width: 6, // The line thickness
+            width: 6,   // The line thickness
             radius: 12, // The radius of the inner circle
-            corners: 1, // Corner roundness (0..1)
-            rotate: 0, // The rotation offset
-            direction: 1, // 1: clockwise, -1: counterclockwise
             color: '#000', // #rgb or #rrggbb or array of colors
-            speed: 1, // Rounds per second
-            trail: 60, // Afterglow percentage
-            shadow: false, // Whether to render a shadow
+            trail: 60,  // Afterglow percentage
             hwaccel: false, // Whether to use hardware acceleration
             className: 'spinner', // The CSS class to assign to the spinner
-            zIndex: 2e9, // The z-index (defaults to 2000000000)
             top: '50%', // Top position relative to parent
             left: '50%' // Left position relative to parent
           };
