@@ -11,7 +11,6 @@ var render    = require(__dirname + "/render");
 
 function run(body, done) {
 
-  // Ensure directory structure exists
   setup.directories();
   setup.files();
 
@@ -25,6 +24,7 @@ function run(body, done) {
   var test_started  = false;
 
   // Retrieve and validate URI list
+  /*
   try {
     var site_list = require(__dirname + "/sites.json");
     var uri_list  = JSON.parse(JSON.stringify(site_list));
@@ -32,22 +32,29 @@ function run(body, done) {
     console.error('\nsites.json is not valid JSON formatting: '.red + e + '\n');
     process.exit(1);
   }
+  */
+
+
+  // Spawn Driver
+  var driver = new webdriver.Builder().
+      withCapabilities(capabilities).
+      build();
+  driver.manage().window().setSize(parseInt(body.width), parseInt(body.height));
+
 
   // Loop through each URI
-  async.each(body.urn, function(i, step) {
-    collectScreen(i, step);
+  body.urn.forEach( function(i) {
+    collectScreen(i);
   });
+
 
   // Generate final report only after all screens have been compared
   function renderResults() {
     if (waiting == 0 && test_started == true) {
-      console.log("Not waiting!");
+      driver.quit();
       var timestamp = (new Date).toISOString();
       status.total = status.pass_count + status.fail_count + status.na_count + status.error_count;
-      //html = render.render(results, timestamp, cur_build, status);
 
-      //fs.writeFileSync("./views/output-" + build + ".html", html);
-      //fs.writeFileSync("./views/output.html", html);
       log_stamp += '\nFail : ' + status.fail_count + '\nPass : ' + status.pass_count + '\nError : ' + status.error_count + '\nN/A : ' + status.na_count + '\nResolved : ' + status.resolved_count + '\n-----';
       fs.appendFile('executions.log', log_stamp + '\n', function (err) {
         if (err) console.log('Error appending version to execution log ' + err);
@@ -60,7 +67,7 @@ function run(body, done) {
 
 
   // Collect and Compare screens
-  function collectScreen(urn, step) {
+  function collectScreen(urn) {
 
     waiting ++;
     test_started = true;
@@ -77,17 +84,8 @@ function run(body, done) {
       console.log("\nCapturing latest screens from: \n\t" + uri.green);
     }
 
-    // Spawn Driver(s)
-    var driver = new webdriver.Builder().
-        withCapabilities(capabilities).
-        build();
-
-    driver.manage().window().setSize(parseInt(body.width), parseInt(body.height));
-
-    // Navigate Driver to URL
+    // Navigate Driver to URL and compare screenshots
     driver.get(uri);
-
-    // Compare screenshots
     driver.takeScreenshot().then(function(data, done) {
 
       writeScreenshot(data, uri_safe + '.png');
@@ -145,15 +143,11 @@ function run(body, done) {
           testResult.explanation = "Nothing to compare with. Setting to master for next run.";
           results.push(testResult);
           status.na_count ++;
-          renderResults();
           waiting --;
+          renderResults();
         }
-        //waiting --;
-        step();
       });
     });
-    // Per test teardown - Quit Driver
-    driver.quit();
   }
 }
 
