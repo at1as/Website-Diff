@@ -18,6 +18,7 @@ function createFile(filename) {
 }
 
 function createDirs() {
+  createDir('./saved-env');
   createDir('./public/assets');
   createDir('./public/assets/images');
   createDir('./public/assets/images/screenshots');

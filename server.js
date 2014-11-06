@@ -17,13 +17,12 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
+app.disable('etag');
 
-port = process.env.PORT || 8080;
+port        = process.env.PORT || 8080;
+test_data   = [];
+base_config = {'browser':['chrome', 'phantomjs'],'width':1000,'height':1000, url:'www.google.com/', urn: ['plus']}
 report_generated = false;
-test_data = [];
-
-// TODO: Save and retreive tehse
-last_config = {'browser':['chrome', 'phantomjs'],'width':1000,'height':1000, url:'www.google.com/', urn: ['plus']}
 
 
 // Load configuration page on start
@@ -51,7 +50,6 @@ app.get('/report', function (req, res) {
 
 
 // Set failed test to new master
-// TODO : Update Log Entries
 app.post('/master', function (req, res) {
   previous  = 'public' + req.body.previous;
   current   = 'public' + req.body.current;
@@ -64,24 +62,29 @@ app.post('/master', function (req, res) {
   test_data[3].fail_count -= 1;
   test_data[3].resolved_count += 1;
 
+  // TODO - clip last 4 lines off log file and rewrite
+
   res.status(200).end();
 });
 
 
 // Load configuration page
 app.get('/config', function (req, res) {
-  res.render('config', { config: last_config });
+  fs.readFile('./sites.json', 'utf8', function (err, data) {
+    if (err) {
+      res.render('config', { config: base_config });
+    } else {
+      res.render('config', { config: JSON.parse(data) });
+    }
+  });
 });
 
 
-// Execute a new test
+// Execute new test
 app.post('/execute', function (req, res) {
-  last_config = req.body;
-  build     = req.body.build;
-  protocol  = req.body.protocol;
-  url       = req.body.url;
+  fs.writeFile('./sites.json', JSON.stringify(req.body));
 
-  console.log(JSON.stringify(req.body));
+  console.log("Request Details: " + JSON.stringify(req.body));
   driver.run(req.body, function(done){
 
     test_data = done || [];
@@ -95,6 +98,60 @@ app.post('/execute', function (req, res) {
       executed: true
     });
   });
+});
+
+
+// Save Test Environment
+app.post('/save-test', function (req, res) {
+
+  env_name  = req.body.title;
+  env       = req.body;
+  path      = './saved-env/' + env_name + '.json';
+
+  delete env["title"];
+
+  fs.writeFile(path, JSON.stringify(env));
+  fs.readFile(path, 'utf8', function (err, data) {
+    if (err) {
+      res.render('config', { config: base_config });
+    } else {
+      res.render('config', { config: JSON.parse(path) });
+    }
+  });
+});
+
+
+// Return list of saved test environments
+app.get('/test-list', function(req, res) {
+  var file_list = fs.readdirSync('./saved-env/');
+  var filtered_list = [];
+  file_list.forEach(function(file) {
+    if (file.substring(file.length-5) == ".json") {
+      filtered_list.push(file);
+    }
+  });
+  res.send(filtered_list);
+});
+
+
+// Render page with loaded environment
+app.get('/test-list/:env', function(req, res) {
+
+  var path = './saved-env/' + req.params.env;
+  var loaded_env = fs.readFileSync(path, 'utf8')
+
+  res.render('config', { config: JSON.parse(loaded_env) });
+
+  /*
+  fs.readFileSync(path, 'utf8', function (err, data) {
+    if (err) {
+      console.log("HELLO2");
+      res.render('config', { config: base_config });
+    } else {
+      console.log("HELLO");
+      res.render('config', { config: JSON.parse(path) });
+    }
+  });*/
 });
 
 
@@ -133,6 +190,30 @@ app.delete('/execution-log', function(req, res) {
       res.render('reports', { log_entries: data.split('\n') });
     });
   });
+});
+
+
+// Clear saved screens
+app.delete('/screens', function(req, res) {
+  var screens_path_old  = __dirname + '/public/assets/images/screenshots/old/';
+  var screens_path_new  = __dirname + '/public/assets/images/screenshots/new/';
+  var screens_path_diff = __dirname + '/public/assets/images/screenshots/results/';
+
+  var old_files   = fs.readdirSync(screens_path_old) || [];
+  var new_files   = fs.readdirSync(screens_path_new) || [];
+  var diff_files  = fs.readdirSync(screens_path_diff) || [];
+
+  old_files.forEach( function(file) {
+    fs.unlink(screens_path_old + file);
+  });
+  new_files.forEach( function(file) {
+    fs.unlink(screens_path_new + file);
+  });
+  diff_files.forEach( function(file) {
+    fs.unlink(screens_path_diff + file);
+  });
+
+  res.status(200).end();
 });
 
 

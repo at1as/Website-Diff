@@ -6,9 +6,10 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="shortcut icon" href="/favicon.png">
   </head>
 
-  <body role="document">
+  <body role="document" {% if executed %}onload="updatePercent()"{% endif %}>
 
     <div class="navbar-collapse">
       <ul class="nav navbar-nav" style="display:inline-block;">
@@ -140,7 +141,6 @@
     <script type="text/javascript">
 
       var total_tests = document.getElementById("total").innerHTML;
-      updatePercent();
 
       function updatePercent() {
         total_tests     = document.getElementById("total").innerHTML;
@@ -150,13 +150,11 @@
         var na_count    = document.getElementById("na_count").innerHTML;
         var res_count   = document.getElementById("resolved_count").innerHTML;
 
-        document.getElementById('pass_pct').innerHTML = "[ " + pass_count/total_tests * 100 + " % ]";
-        document.getElementById('fail_pct').innerHTML = "[ " + fail_count/total_tests * 100 + " % ]";
-        document.getElementById('error_pct').innerHTML = "[ " + error_count/total_tests * 100 + " % ]";
-        document.getElementById('na_pct').innerHTML = "[ " + na_count/total_tests * 100 + " % ]";
-        document.getElementById('resolved_pct').innerHTML = "[ " + res_count/total_tests * 100 + " % ]";
-
-        document.getElementById('na_pct').innerHTML = "[ " + na_count/total_tests * 100 + " % ]";
+        document.getElementById('pass_pct').innerHTML = "[ " + (pass_count/total_tests).toFixed(3) * 100 + " % ]";
+        document.getElementById('fail_pct').innerHTML = "[ " + (fail_count/total_tests).toFixed(3) * 100 + " % ]";
+        document.getElementById('error_pct').innerHTML = "[ " + (error_count/total_tests).toFixed(3) * 100 + " % ]";
+        document.getElementById('na_pct').innerHTML = "[ " + (na_count/total_tests).toFixed(3) * 100 + " % ]";
+        document.getElementById('resolved_pct').innerHTML = "[ " + (res_count/total_tests).toFixed(3) * 100 + " % ]";
 
       }
 
@@ -182,57 +180,24 @@
 
       var master_count = 0;
 
+      function setToMaster(index) {
+        var curr_img = document.getElementById('img-curr-' + index).getAttribute('src');
+        var prev_img = document.getElementById('img-prev-' + index).getAttribute('src');
 
-      function setMaster(index) {
+        var url = "/master";
+        var data = JSON.stringify({'current':curr_img, 'previous':prev_img, 'index':index});
 
-        var status = document.getElementById("status-" + index);
-        status.innerHTML = "Resolved : ";
-        status.style.color = "green";
+        var client = new XMLHttpRequest();
 
-        master_count++;
+        client.open("POST", url, false);
+        client.setRequestHeader("Content-Type", "application/json");
+        client.send(data);
 
-        /*document.getElementById("master-btn-" + index).remove();
-        document.getElementById("explanation-" + index).remove();
-
-        if (document.getElementById("resolved_count") == null) {
-          var dt = document.createElement('dt');
-          var dd = document.createElement('dd');
-          dd.id = 'resolved_count';
-
-          dt.innerHTML = '<span style="color:green">Resolved:&nbsp</span>';
-          dd.innerHTML = master_count + ' / ' + total_tests;
-          document.getElementById("status_list").appendChild(dt);
-          document.getElementById("status_list").appendChild(dd);
-        } else {
-          document.getElementById("resolved_count").innerHTML = master_count + ' / ' + total_tests;
-        }
-
-        var fail_count = document.getElementById("fail_count");
-        fail_count.innerHTML = fail_count.innerHTML - 1;
-
-        minmax(index);
-        updatePercent();*/
+        if (client.status == 200)
+            window.location.replace("/report");
+        else
+            alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
       }
-
-    function setToMaster(index) {
-      var curr_img = document.getElementById('img-curr-' + index).getAttribute('src');
-      var prev_img = document.getElementById('img-prev-' + index).getAttribute('src');
-
-      var url = "/master";
-      var data = JSON.stringify({'current':curr_img, 'previous':prev_img, 'index':index});
-
-      var client = new XMLHttpRequest();
-
-      client.open("POST", url, false);
-      client.setRequestHeader("Content-Type", "application/json");
-      client.send(data);
-
-      if (client.status == 200)
-          //setMaster(index);
-          window.location.replace("/report");
-      else
-          alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
-    }
 
     </script>
 
