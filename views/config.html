@@ -84,7 +84,7 @@
       <div id="login_fields">
         <div class="form-row">
           <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Login URN ( for <site>/login enter 'login' )">Login URL<span class="required">*</span></label>
-          <input class="form-control" name="cred_url" id="cred_url" style="display:inline-block; float:none; width:300px;" value="{{config.base_url}}">
+          <input class="form-control" name="cred_url" id="cred_url" style="display:inline-block; float:none; width:300px;" value="{{config.login_urn}}">
         </div>
         <div class="form-row">
           <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="The login username">Username</label>
@@ -218,7 +218,7 @@
         // Login Vars
         test_env.login_enabled = login_enabled;
         if (login_enabled == true) {
-          test_env.base_url   = document.getElementById('cred_url').value;
+          test_env.login_urn  = document.getElementById('cred_url').value;
           test_env.usr        = document.getElementById('cred_usr').value;
           test_env.usr_attr   = document.getElementById('cred_usr_attr').value;
           test_env.usr_val    = document.getElementById('cred_usr_val').value;
