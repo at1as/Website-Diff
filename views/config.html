@@ -6,10 +6,11 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="shortcut icon" href="/favicon.png">
     <script type="text/javascript" src="/js/spin.min.js"></script>
   </head>
 
-  <body role="document">
+  <body role="document" {% if config.login_enabled == false %}onload="login_disp()"{% endif %}>
 
     <div class="navbar-collapse">
       <ul class="nav navbar-nav" style="display:inline-block;">
@@ -28,27 +29,25 @@
 
       <!--TEST:BEGIN-->
       <div class="seperator">
-        <span class="min_max_content">[ &ndash; ] </span>
         Test Environment
       </div>
 
       <div class="form-row">
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Resolution (w<span style="margin-left:2px; margin-right:2px;"><i>x</i></span>h)<span class="required">*</span></label>
+          <input class="form-control form-field-small" id="width" type="number" min="1" max="9999" style="text-align:center" value="{{config.width}}">
+          <span style="margin-right:2px; margin-left:2px;">x</span>
+          <input class="form-control form-field-small" id="height" type="number" min="1" max="9999" style="text-align:center" value="{{config.height}}">
+        </div>
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Browser<span class="required">*</span></label>
-        <select class="form-control" id="browser" name="browser" style="display:inline-block; float:none; width:160px;">
-          {% for browser in config.browser %}
-            <option selected>{{browser}}</option>
-          {% endfor %}
+        <select class="form-control form-field-small" id="browser" name="browser" value={{config.browser}}>
+            <option>chrome</option>
+            <option>phantomjs</option>
         </select>
       </div>
       <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Resolution (w <i>x</i> h)</label>
-        <input class="form-control" id="width" type="number" min="1" max="9999" style="display:inline-block; float:none; width:72px;" value="{{config.width}}">
-        <span style="margin-right:2px; margin-left:2px;">x</span>
-        <input class="form-control" id="height" type="number" min="1" max="9999" style="display:inline-block; float:none; width:72px;" value="{{config.height}}">
-      </div>
-      <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Protocol<span class="required">*</span></label>
-        <select class="form-control" id="protocol" name="protocol" style="display:inline-block; float:none; width:160px;">
+        <select class="form-control form-field-small" id="protocol" name="protocol">
           {% if config.protocol == "https://" %}
             <option>http://</option>
             <option selected>https://</option>
@@ -59,46 +58,79 @@
         </select>
       </div>
       <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">URL<span class="required">*</span></label>
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Enter base URL without protocol or path ( for 'www.google.ca/images' enter 'www.google.ca' )">URL<span class="required">*</span></label>
         <input class="form-control" name="url" id="url" style="display:inline-block; float:none; width:300px;" value={{config.url}}>
       </div>
       <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right; vertical-align:top;">URN(s)<span class="required">*</span></label>
-        <textarea class="form-control" id="urns" style="display:inline-block; float:none; width:300px;" wrap="off" rows="5">{% for urn in config.urn %}{{urn}}&#13;&#10;{% endfor %}</textarea>
+        <label class="form-label" style="display:inline-block; width:150px; text-align:right; vertical-align:top;" tooltip="Enter each urn on a new line">URN(s)<span class="required">*</span></label>
+        <textarea class="form-control" id="urns" style="display:inline-block; float:none; width:300px; max-width:300px; min-width:300px; min-height:135px;" wrap="off" rows="6" spellcheck="false">{% for urn in config.urn %}{{urn}}&#13;&#10;{% endfor %}</textarea>
       </div>
 
 
       <div class="seperator">
-        <span class="min_max_content">[ &ndash; ] </span>
         Login Parameters
       </div>
 
-      <p style="margin-bottom:30px; margin-left:20px; color:#777"><i>For products that require log in to access the URNs listed above, enter the parameters here, along with the HTML id="" tag of the username field and password field.</i></p>
-      <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Username</label>
-        <input class="form-control" name="usr" id="usr" style="display:inline-block; float:none; width:160px;">
-      </div>
-      <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password</label>
-        <input class="form-control" type="password" name="pwd" id="pwd" style="display:inline-block; float:none; width:160px;">
-        <input type="checkbox" id="pwd_disp_toggle" style="margin-left:10px;" onclick="pwd_disp()"><label for="pwd_disp_toggle" style="margin-left:5px; color:#777">Show</label>
-      </div>
-      <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Login URL</label>
-        <input class="form-control" name="cred_url" id="cred_url" style="display:inline-block; float:none; width:300px;">
-      </div>
-      <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password Field ID</label>
-        <input class="form-control" name="cred_usr_id" id="cred_usr_id" style="display:inline-block; float:none; width:300px;">
-      </div>
-      <div class="form-row">
-        <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Password Field ID</label>
-        <input class="form-control" name="cred_pwd_id" id="cred_pwd_id" style="display:inline-block; float:none; width:300px;">
+      <p style="margin-bottom:10px; margin-left:20px; color:#777"><i>For products that require log in to access the URNs listed above, enter the parameters here, along with the HTML id="" tag of the username field and password field.</i></p>
+
+      <div style="text-align:center; margin-bottom:20px;">
+        {% if config.login_enabled %}
+          <input type="checkbox" id="login_toggle" style="margin-left:10px;" onclick="login_disp()" autocomplete="off" checked><label for="login_toggle" style="margin-left:5px; color:#777">Enable</label>
+        {% else %}
+          <input type="checkbox" id="login_toggle" style="margin-left:10px;" onclick="login_disp()" autocomplete="off"><label for="login_toggle" style="margin-left:5px; color:#777">Enable</label>
+        {% endif %}
       </div>
 
+      <div id="login_fields">
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Login URN ( for <site>/login enter 'login' )">Login URL<span class="required">*</span></label>
+          <input class="form-control" name="cred_url" id="cred_url" style="display:inline-block; float:none; width:300px;" value="{{config.base_url}}">
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="The login username">Username</label>
+          <input class="form-control" name="cred_usr" id="cred_usr" style="display:inline-block; float:none; width:300px;" value="{{config.usr}}">
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Find username input by name or by id ?">Username Key</label>
+          <select class="form-control form-field-small" id="cred_usr_attr" name="cred_usr_attr" value="{{config.usr_attr}}">
+            <option>name</option>
+            <option>id</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="The html value associated with the above tag ( if <input name='usr_field'> then enter 'usr_field' )">Username Value</label>
+          <input class="form-control" name="cred_usr_val" id="cred_usr_val" style="display:inline-block; float:none; width:300px;" value="{{config.usr_val}}">
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="The login password">Password<span class="required">*</span></label>
+          <input class="form-control" type="password" name="cred_pwd" id="cred_pwd" style="display:inline-block; float:none; width:300px;" value="{{config.pwd}}">
+          <label id="pwd_display_toggle" onclick="pwd_disp()" style="color:#777; font-size:13px; float:right; margin-left:5px; margin-top:9px;">Show</label>
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Find password input by name or by id ?">Password Key<span class="required">*</span></label>
+          <select class="form-control form-field-small" id="cred_pwd_attr" name="cred_pwd_attr" value="{{config.pwd_attr}}">
+            <option>name</option>
+            <option>id</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="The html value associated with the above tag ( if <input name='pwd_field'> then enter 'pwd_field' )">Password Value<span class="required">*</span></label>
+          <input class="form-control" name="cred_pwd_val" id="cred_pwd_val" style="display:inline-block; float:none; width:300px;" value="{{config.pwd_val}}">
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Find login button by name or by id ?">Login Btn Attr<span class="required">*</span></label>
+          <select class="form-control form-field-small" id="cred_btn_attr" name="cred_btn_attr" value="{{config.btn_attr}}">
+            <option>name</option>
+            <option>id</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="the html value associated with the above button ( if <button id='login'> then enter 'login')">Login Btn Value<span class="required">*</span></label>
+          <input class="form-control" name="cred_btn_val" id="cred_btn_val" style="display:inline-block; float:none; width:300px;" value="{{config.login_btn}}">
+        </div>
+      </div>
 
       <div class="seperator">
-        <span class="min_max_content">[ &ndash; ] </span>
         Test Execution Tag
       </div>
 
@@ -110,14 +142,19 @@
       <!--TEST:END-->
     </div>
 
-    <div id="urn_button_div" style="width:200px; margin-left:auto; margin-right:auto; padding-top:40px; padding-bottom:40px;">
-      <button id="add_urn" class="btn btn-lg btn-primary btn-block" type="submit" onclick="execute(); modal_toggle()">Generate</button>
+    <div id="urn_button_div" style="width:225px; margin-left:auto; margin-right:auto; margin-top:40px; margin-bottom:40px; padding:5px; background-color:#888; border-radius:3px;">
+      <button id="clear-fields" class="btn btn-primary btn-block" onclick="clear_fields()">Clear All</button>
+      <button id="save-modal" class="btn btn-primary btn-block" onclick="save_modal()">Save Environment</button>
+      <button id="load-modal" class="btn btn-primary btn-block" onclick="test_list(); load_modal()">Load Environment</button>
+      <button id="execute" class="btn btn-primary btn-block" type="submit" onclick="execute()">Generate Report</button>
     </div>
 
 
 
-    <!-- MODAL:BEGIN -->
+    <!-- MODALS:BEGIN -->
     <div id="backdrop" style="display:none">
+
+      <!-- MODAL: TEST EXECUTION -->
       <div class="centered" id="modal-alert" tabindex="-1" role="dialog" style="display:none; z-index:11">
           <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
             <h4><strong>Collecting Screenshots...</strong></h4>
@@ -125,38 +162,50 @@
             <div id="content"></div>
           </div>
       </div>
+      <!-- END TEST EXECUTION -->
+
+      <!-- MODAL: SAVING -->
+      <div class="centered" id="modal-save" tabindex="-1" role="dialog" style="display:none; z-index:11">
+        <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
+          <h4><strong>Save Environment...</strong></h4>
+          <input id="new-test-name" style="display:inline-block; float:none; width:300px;" placeholder="Test Name">
+          <div style="margin-top:10px; margin-bottom:10px; text-align:center">
+            <button id="save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="save_test()">Save Env</button>
+            <button id="cancel-save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="close_modals()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <!-- END SAVING -->
+
+      <!-- MODAL: LOADING -->
+      <div class="centered" id="modal-load" tabindex="-1" role="dialog" style="display:none; z-index:11">
+        <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
+          <h4><strong>Load Environment...</strong></h4>
+          <select class="form-control form-field-small" id="test_list" name="test_list" value="" style="width:300px;">
+          </select>
+          <div style="margin-top:10px; margin-bottom:10px; text-align:center">
+            <button id="load" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="load_test()">Load Env</button>
+            <button id="cancel-load" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="close_modals()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <!-- END LOADING -->
+
     </div>
-    <!-- MODAL:END -->
+    <!-- MODALS:END -->
 
 
     <script type="text/javascript">
 
-      var urn_count = 0;
+      var urn_count     = 0;
+      var login_enabled = true;
 
-      function add_urn(){
-
-        urn_count++;
-
-        var container = document.createElement('div');
-        container.className = "form-row";
-        var label = document.createElement('label');
-        label.className = "form-label";
-        label.style = "display:inline-block; width:150px; text-align:right;";
-        input = document.createElement('input');
-        input.className = "form-control";
-        input.style = "display:inline-block; float:none; width:300px;";
-        input.id = "urn" + urn_count;
-
-        container.appendChild(label);
-        container.appendChild(input);
-
-        document.getElementById('add_button').parentNode.insertBefore(container, document.getElementById('add_button'));
-      }
-
-      function execute() {
-
-        modal_toggle();
+      function assemblePayload(purpose) {
         var test_env = {}
+
+        if (purpose == "save") {
+          test_env.title  = document.getElementById('new-test-name').value;
+        }
 
         // Environment Vars
         test_env.browser  = document.getElementById('browser').value;
@@ -166,10 +215,24 @@
         test_env.url      = document.getElementById('url').value;
         test_env.urn      = []
 
-        // Test Vars
-        test_env.build    = document.getElementById('build').value;
+        // Login Vars
+        test_env.login_enabled = login_enabled;
+        if (login_enabled == true) {
+          test_env.base_url   = document.getElementById('cred_url').value;
+          test_env.usr        = document.getElementById('cred_usr').value;
+          test_env.usr_attr   = document.getElementById('cred_usr_attr').value;
+          test_env.usr_val    = document.getElementById('cred_usr_val').value;
+          test_env.pwd        = document.getElementById('cred_pwd').value;
+          test_env.pwd_attr   = document.getElementById('cred_pwd_attr').value;
+          test_env.pwd_val    = document.getElementById('cred_pwd_val').value;
+          test_env.login_attr = document.getElementById('cred_btn_attr').value;
+          test_env.login_btn  = document.getElementById('cred_btn_val').value;
+        }
 
-        // Ensure Data formatting correct
+        // Test Vars
+        test_env.build = document.getElementById('build').value;
+
+        // Ensure Trailing slash for URL
         if (test_env.url.slice(-1) != "/") {
           test_env.url = test_env.url + "/";
         }
@@ -177,23 +240,101 @@
         urn_list = document.getElementById('urns').value.split('\n');
         for(i=0;i<urn_list.length;i++){
           if (urn_list[i] != "") {
+            // Clip leading slash for URN
+            if (urn_list[i].charAt(0) === '/') {
+              urn_list[i] = urn_list[i].substr(1);
+            }
             test_env.urn.push(urn_list[i]);
           }
         }
+        return test_env;
+      }
+
+
+      function execute() {
+
+        modal_toggle();
 
         // Issue request
         var url     = "/execute";
-        var data    = JSON.stringify(test_env);
+        var payload = assemblePayload("execute");
+        var data    = JSON.stringify(payload);
         var client  = new XMLHttpRequest();
 
         client.open("POST", url, false);
         client.setRequestHeader("Content-Type", "application/json");
         client.send(data);
 
-        if (client.status == 200)
-            window.location.replace("/");
-        else
-            alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+        if (client.status == 200) {
+          window.location.replace("/");
+        } else {
+          alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+        }
+      }
+
+      function clear_fields() {
+        // Test Config
+        document.getElementById('browser').value = "";
+        document.getElementById('url').value = "";
+        document.getElementById('urns').value = "";
+        // Login Params
+        document.getElementById('cred_url').value = "";
+        document.getElementById('cred_usr').value = "";
+        document.getElementById('cred_usr_val').value = "";
+        document.getElementById('cred_pwd').value = "";
+        document.getElementById('cred_pwd_val').value = "";
+        document.getElementById('cred_btn_val').value = "";
+        // Build Number
+        document.getElementById('build').value = "";
+      }
+
+      function save_modal() {
+        document.getElementById('backdrop').style.display = '';
+        document.getElementById('modal-save').style.display = '';
+      }
+
+      function save_test() {
+        var url     = "/save-test";
+        var payload = assemblePayload("save");
+        var data    = JSON.stringify(payload);
+        var client  = new XMLHttpRequest();
+
+        client.open("POST", url, false);
+        client.setRequestHeader("Content-Type", "application/json");
+        client.send(data);
+
+        if (client.status == 200) {
+          window.location.replace("/config");
+        } else {
+          alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+        }
+      }
+
+      function load_modal() {
+        document.getElementById('backdrop').style.display = '';
+        document.getElementById('modal-load').style.display = '';
+      }
+
+      function test_list() {
+        var url     = "/test-list";
+        var client  = new XMLHttpRequest();
+        client.open("GET", url, false);
+        client.send();
+        test_list = client.responseText;
+        test_list = JSON.parse(test_list);
+
+        for (var i = 0; i < test_list.length; i++) {
+          var opt = test_list[i];
+          var el = document.createElement("option");
+          el.textContent = opt;
+          el.value = opt;
+          document.getElementById('test_list').appendChild(el);
+        }
+      }
+
+      function load_test() {
+        var env = document.getElementById("test_list").value;
+        window.location.replace("/test-list/" + env);
       }
 
       function modal_toggle() {
@@ -227,13 +368,28 @@
         }
       }
 
+      function close_modals(){
+        document.getElementById('backdrop').style.display = 'none';
+        document.getElementById('modal-save').style.display = 'none';
+        document.getElementById('modal-load').style.display = 'none';
+      }
+
       function pwd_disp(){
-        var pwd_field = document.getElementById('pwd');
+        var pwd = document.getElementById('cred_pwd');
+        var pwd_label = document.getElementById('pwd_display_toggle');
         if (pwd.type == "password") {
           pwd.type = "";
+          pwd_label.innerHTML = "Hide";
         } else {
           pwd.type = "password";
+          pwd_label.innerHTML = "Show";
         }
+      }
+
+      function login_disp(){
+        var login_fields = document.getElementById('login_fields');
+        login_enabled = login_enabled != true ? true : false;
+        login_fields.style.display = login_fields.style.display != 'none' ? 'none' : '';
       }
 
     </script>
