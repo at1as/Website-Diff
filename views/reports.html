@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="shortcut icon" href="/favicon.png">
   </head>
 
   <body role="document">
@@ -61,7 +62,17 @@
       }
 
       function clear_screens(){
-        // TODO
+        var url = "/screens";
+        var client = new XMLHttpRequest();
+
+        client.open("DELETE", url, false);
+        client.send();
+
+        if (client.status == 200)
+          location.reload();
+        else
+          console.log("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
       }
+
     </script>
   </body>
