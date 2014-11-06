@@ -4,3 +4,6 @@ node_modules
 /public/assets/images/screenshots/
 executions.log
 package.json
+phantomjsdriver.log
+sites.json
+/saved-env
