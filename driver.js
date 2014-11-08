@@ -18,7 +18,7 @@ function run(body, done) {
   // Test Variables
   var cur_build     = body.build || 'build not specified';
   var log_stamp     = 'Time : ' + (new Date).toISOString() + '\nBuild : ' + (cur_build || 'build not specified');
-  var capabilities  = { 'browserName' : body.browser };
+  var capabilities  = { 'browserName' : body.browser, 'chromeOptions': { args: ['--test-type'] }, 'phantomjs.cli.args': ['--ignore-ssl-errors=true',  '--web-security=false'] };
   var results       = [];
   var waiting       = 0;
   var status        = {'pass_count':0, 'fail_count':0, 'na_count':0, 'error_count':0, 'resolved_count':0, 'total':0}
@@ -48,12 +48,11 @@ function run(body, done) {
   if (body.login_enabled) {
     driver.get(body.protocol + body.url + body.login_urn).then(function() {
     driver.sleep(1000);
-    console.log(driver.getCurrentUrl());
     driver.findElement(webdriver.By.name(body.usr_val)).sendKeys(body.usr).then(function() {
-      //driver.sleep(1000);
       driver.findElement(webdriver.By.name(body.pwd_val)).sendKeys(body.pwd).then(function() {
           driver.sleep(1000);
           driver.findElement(webdriver.By.id(body.login_btn)).click().then(function() {
+              driver.sleep(1000);
               testRunner();
           });
       });
