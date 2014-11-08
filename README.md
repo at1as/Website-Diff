@@ -19,10 +19,11 @@ HTML reports will be generated for the comparisons, flagging instances in which 
 
 ## TODO
 
-* Include capabilities for multiple browsers in driver.js
+* Hardcode browser view offset (a 1000x1000 chrome driver, takes a screenshot less than 1000x1000 due to borders)
+* Update logs to reflect new master
 * Strip image file names of unexpected characters
 
 
 ## Disclaimer
 
-Work in progress (in its very early stages). Expect lots of refactoring.
+Work in progress. Expect lots of refactoring.

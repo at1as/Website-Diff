@@ -7,3 +7,4 @@ package.json
 phantomjsdriver.log
 sites.json
 /saved-env
+last-run.json

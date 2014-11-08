@@ -27,6 +27,7 @@ function run(body, done) {
 
   // Ensure all browser screenshots are same size
   var CHROME_OFFSET_H = 108;
+
   if (body.browser == "chrome") {
     var browser_height  = body.height + CHROME_OFFSET_H;
     var browser_width   = body.width;
@@ -47,8 +48,9 @@ function run(body, done) {
   if (body.login_enabled) {
     driver.get(body.protocol + body.url + body.login_urn).then(function() {
     driver.sleep(1000);
+    console.log(driver.getCurrentUrl());
     driver.findElement(webdriver.By.name(body.usr_val)).sendKeys(body.usr).then(function() {
-      driver.sleep(1000);
+      //driver.sleep(1000);
       driver.findElement(webdriver.By.name(body.pwd_val)).sendKeys(body.pwd).then(function() {
           driver.sleep(1000);
           driver.findElement(webdriver.By.id(body.login_btn)).click().then(function() {

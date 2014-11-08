@@ -70,7 +70,7 @@ app.post('/master', function (req, res) {
 
 // Load configuration page
 app.get('/config', function (req, res) {
-  fs.readFile('./sites.json', 'utf8', function (err, data) {
+  fs.readFile('./last-run.json', 'utf8', function (err, data) {
     if (err) {
       res.render('config', { config: base_config });
     } else {
@@ -82,7 +82,7 @@ app.get('/config', function (req, res) {
 
 // Execute new test
 app.post('/execute', function (req, res) {
-  fs.writeFile('./sites.json', JSON.stringify(req.body));
+  fs.writeFile('./last-run.json', JSON.stringify(req.body));
 
   console.log("Request Details: " + JSON.stringify(req.body));
   driver.run(req.body, function(done){
