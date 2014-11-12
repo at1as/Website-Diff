@@ -27,7 +27,7 @@ dd {
 }
 #run-details{
   box-shadow: 0 0 1px 0 #777;
-  -webkit-box-shadow: 0 0 1px 0 #777;
+  -webkit-box-shadow: 0px 0px 1px 1px #CCC;
   background-color:#FCFCFC;
   max-width:40%;
   margin-left:auto;
@@ -67,6 +67,7 @@ tr.row-spacing > td {
   padding:30px;
   border-radius:3px;
   box-shadow: 0 0 1px #777;
+  -webkit-box-shadow: 0px 0px 1px 1px #CCC;
   background-color:white;
   overflow:hidden;
   font-size:16px;
@@ -94,6 +95,8 @@ tr.row-spacing > td {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%,-50%); /* IE 9 */
+  -webkit-transform: translate(-50%,-50%); /* Chrome, Safari, Opera */
 }
 .h-centered {
   position: fixed;
