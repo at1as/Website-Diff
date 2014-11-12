@@ -17,6 +17,7 @@
         <li style="display:inline-block;" class="active"><a href="/config"><b>Configuration</b></a></li>
         <li style="display:inline-block;"><a href="/report">Current Report </a></li>
         <li style="display:inline-block;"><a href="/reports">Run History</a></li>
+        <li style="display:inline-block;"><a href="/admin">Admin</a></li>
       </ul>
     </div>
 
@@ -250,26 +251,26 @@
         return test_env;
       }
 
-
       function execute() {
 
         modal_toggle();
 
-        // Issue request
         var url     = "/execute";
         var payload = assemblePayload("execute");
         var data    = JSON.stringify(payload);
         var client  = new XMLHttpRequest();
 
-        client.open("POST", url, false);
+        client.onreadystatechange = function() {
+          if (client.readyState == 4 && client.status == 200) {
+            window.location.replace("/");
+          } else if (client.readyState == 4) {
+            alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+          }
+        }
+
+        client.open("POST", url, true);
         client.setRequestHeader("Content-Type", "application/json");
         client.send(data);
-
-        if (client.status == 200) {
-          window.location.replace("/");
-        } else {
-          alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
-        }
       }
 
       function clear_fields() {
@@ -391,6 +392,12 @@
         login_enabled = login_enabled != true ? true : false;
         login_fields.style.display = login_fields.style.display != 'none' ? 'none' : '';
       }
+
+      var new_test_name = document.getElementById('new-test-name');
+      new_test_name.addEventListener('input', function()
+      {
+        console.log('input changed to: ', new_test_name.value);
+      });
 
     </script>
   </body>

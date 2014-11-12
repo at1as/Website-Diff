@@ -16,6 +16,7 @@
         <li style="display:inline-block;"><a href="/config">Configuration</a></li>
         <li style="display:inline-block;"><a href="/report">Current Report</a></li>
         <li style="display:inline-block;"><a href="/reports"><b>Run History</b></a></li>
+        <li style="display:inline-block;"><a href="/admin">Admin</a></li>
       </ul>
     </div>
 
@@ -32,12 +33,13 @@
     </div>
 
     <div id="log-operations">
-      <div id="clear_buttons">
-        <button class="btn btn-primary btn-block" onclick="clear_screens()">Clear All Screenshots</button>
-        <button class="btn btn-primary btn-block" onclick="clear_logs()">Clear Logs</button>
-      </div>
-      <div id="save_buttons" style="margin-top:5px;">
-        <button class="btn btn-primary btn-block"onclick="download_logs()">Download Log</button>
+      <div id="button_container" style="width:225px; margin-left:auto; margin-right:auto; margin-top:40px; margin-bottom:40px; padding:5px; background-color:#888; border-radius:3px;">
+        <div id="clear_buttons">
+          <button class="btn btn-primary btn-block" onclick="clear_logs()">Clear Logs</button>
+        </div>
+        <div id="save_buttons" style="margin-top:5px;">
+          <button class="btn btn-primary btn-block"onclick="download_logs()">Download Log</button>
+        </div>
       </div>
     </div>
 
@@ -50,19 +52,6 @@
 
       function clear_logs(){
         var url = "/execution-log";
-        var client = new XMLHttpRequest();
-
-        client.open("DELETE", url, false);
-        client.send();
-
-        if (client.status == 200)
-          location.reload();
-        else
-          console.log("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
-      }
-
-      function clear_screens(){
-        var url = "/screens";
         var client = new XMLHttpRequest();
 
         client.open("DELETE", url, false);

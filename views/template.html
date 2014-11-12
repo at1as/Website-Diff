@@ -9,13 +9,14 @@
     <link rel="shortcut icon" href="/favicon.png">
   </head>
 
-  <body role="document" {% if executed %}onload="updatePercent()"{% endif %}>
+  <body role="document">
 
     <div class="navbar-collapse">
       <ul class="nav navbar-nav" style="display:inline-block;">
         <li style="display:inline-block;"><a href="/config">Configuration</a></li>
         <li style="display:inline-block;" class="active"><a href="/report"><b>Current Report</b></a></li>
         <li style="display:inline-block;"><a href="/reports">Run History</a></li>
+        <li style="display:inline-block;"><a href="/admin">Admin</a></li>
       </ul>
     </div>
 
@@ -150,12 +151,11 @@
         var na_count    = document.getElementById("na_count").innerHTML;
         var res_count   = document.getElementById("resolved_count").innerHTML;
 
-        document.getElementById('pass_pct').innerHTML = "[ " + (pass_count/total_tests).toFixed(3) * 100 + " % ]";
-        document.getElementById('fail_pct').innerHTML = "[ " + (fail_count/total_tests).toFixed(3) * 100 + " % ]";
-        document.getElementById('error_pct').innerHTML = "[ " + (error_count/total_tests).toFixed(3) * 100 + " % ]";
-        document.getElementById('na_pct').innerHTML = "[ " + (na_count/total_tests).toFixed(3) * 100 + " % ]";
-        document.getElementById('resolved_pct').innerHTML = "[ " + (res_count/total_tests).toFixed(3) * 100 + " % ]";
-
+        document.getElementById('pass_pct').innerHTML = "[ " + Math.round((pass_count/total_tests) * 1000)/10 + " % ]";
+        document.getElementById('fail_pct').innerHTML = "[ " + Math.round((fail_count/total_tests) * 1000)/10 + " % ]";
+        document.getElementById('error_pct').innerHTML = "[ " + Math.round((error_count/total_tests) * 1000)/10 + " % ]";
+        document.getElementById('na_pct').innerHTML = "[ " + Math.round((na_count/total_tests) * 1000)/10 + " % ]";
+        document.getElementById('resolved_pct').innerHTML = "[ " + Math.round((res_count/total_tests) * 1000)/10 + " % ]";
       }
 
       function minmax(index){
@@ -198,6 +198,14 @@
         else
             alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
       }
+
+      window.onload = function() {
+        updatePercent();
+      }
+
+      window.addEventListener("DOMContentLoaded", function() {
+        updatePercent();
+      }, false);
 
     </script>
 

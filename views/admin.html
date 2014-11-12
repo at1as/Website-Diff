@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>Website Diff Tool | Admin</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="shortcut icon" href="/favicon.png">
+  </head>
+
+  <body role="document">
+
+    <div class="navbar-collapse">
+      <ul class="nav navbar-nav" style="display:inline-block;">
+        <li style="display:inline-block;" class="active"><a href="/config">Configuration</a></li>
+        <li style="display:inline-block;"><a href="/report">Current Report </a></li>
+        <li style="display:inline-block;"><a href="/reports">Run History</a></li>
+        <li style="display:inline-block;"><a href="/admin"><b>Admin</b></a></li>
+      </ul>
+    </div>
+
+    <div id="page-header">
+      <h3 style="text-align:center;">Administration</h3>
+    </div>
+
+    <div id="main" style="margin: 0 auto; width:500px;overflow:hidden; margin-top:40px; margin-left:auto; margin-right:auto; vertical-align:text-middle; padding:3px;">
+      <div id="button_container" style="width:225px; margin-left:auto; margin-right:auto; margin-top:40px; margin-bottom:40px; padding:5px; background-color:#888; border-radius:3px;">
+        <button id="clear-fields" class="btn btn-primary btn-block" onclick="clear_screens()">Clear All Screenshots</button>
+        <button id="delete-env" class="btn btn-primary btn-block" onclick="load_modal(); test_list()">Delete Environment</button>
+      </div>
+    </div>
+
+
+    <!-- MODALS:BEGIN -->
+    <div id="backdrop" style="display:none">
+
+      <!-- MODAL: LOADING -->
+      <div class="centered" id="modal-delete" tabindex="-1" role="dialog" style="display:none; z-index:11">
+        <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
+          <h4><strong>Delete Environment...</strong></h4>
+          <select class="form-control form-field-small" id="test_list" name="test_list" value="" style="width:300px;">
+          </select>
+          <div style="margin-top:10px; margin-bottom:10px; text-align:center">
+            <button id="load" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="delete_env()">Delete Env</button>
+            <button id="cancel-load" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="close_modals()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <!-- END LOADING -->
+
+    </div>
+    <!-- MODALS:END -->
+
+
+    <script type="text/javascript">
+
+    function load_modal() {
+      document.getElementById('backdrop').style.display = '';
+      document.getElementById('modal-delete').style.display = '';
+    }
+
+    function close_modals() {
+      document.getElementById('backdrop').style.display = 'none';
+      document.getElementById('modal-delete').style.display = 'none';
+    }
+
+    function delete_env() {
+
+      var url     = 'env/' + document.getElementById('test_list').value;
+      var client  = new XMLHttpRequest();
+
+      client.onreadystatechange = function() {
+        if (client.readyState == 4 && client.status == 200) {
+          window.location.replace("/admin");
+        } else if (client.readyState == 4) {
+          alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+        }
+      }
+
+      client.open("DELETE", url, false);
+      client.send();
+    }
+
+    function test_list() {
+      var url     = "/test-list";
+      var client  = new XMLHttpRequest();
+      client.open("GET", url, false);
+      client.send();
+      test_list = client.responseText;
+      test_list = JSON.parse(test_list);
+
+      for (var i = 0; i < test_list.length; i++) {
+        var opt = test_list[i];
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = opt;
+        document.getElementById('test_list').appendChild(el);
+      }
+    }
+
+    function clear_screens(){
+      var url = "/screens";
+      var client = new XMLHttpRequest();
+
+      client.open("DELETE", url, false);
+      client.send();
+
+      if (client.status == 200)
+        location.reload();
+      else
+        console.log("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+    }
+
+    </script>
+  </body>
+</html>
