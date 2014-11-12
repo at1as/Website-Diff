@@ -1,14 +1,14 @@
 var express     = require('express');
 var http        = require('http');
 var swig        = require('swig');
-var bodyParser  = require('body-parser')
+var bodyParser  = require('body-parser');
 var fs          = require('fs');
 var mime        = require('mime');
 var render      = require(__dirname + "/render");
 
 app             = express();
 
-var driver      = require(__dirname + '/driver.js')
+var driver      = require(__dirname + '/driver.js');
 var image_swap  = require(__dirname + '/move.js');
 
 
@@ -65,6 +65,22 @@ app.post('/master', function (req, res) {
   // TODO - clip last 4 lines off log file and rewrite
 
   res.status(200).end();
+});
+
+
+// Load Admin page
+app.get('/admin', function (req, res) {
+  res.render('admin', {});
+});
+
+
+// Delete a saved environment
+app.delete('/env/:env', function (req, res) {
+
+  var env = './saved-env/' + req.params.env;
+  fs.unlink(env);
+
+  res.render('admin');
 });
 
 
@@ -138,7 +154,7 @@ app.get('/test-list', function(req, res) {
 app.get('/test-list/:env', function(req, res) {
 
   var path = './saved-env/' + req.params.env;
-  var loaded_env = fs.readFileSync(path, 'utf8')
+  var loaded_env = fs.readFileSync(path, 'utf8');
 
   res.render('config', { config: JSON.parse(loaded_env) });
 
