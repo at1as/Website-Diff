@@ -170,6 +170,7 @@
         <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
           <h4><strong>Save Environment...</strong></h4>
           <input id="new-test-name" style="display:inline-block; float:none; width:300px;" placeholder="Test Name">
+          <div id="save-msg" style="color:red"></div>
           <div style="margin-top:10px; margin-bottom:10px; text-align:center">
             <button id="save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="save_test()">Save Env</button>
             <button id="cancel-save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="close_modals()">Cancel</button>
@@ -200,6 +201,7 @@
 
       var urn_count     = 0;
       var login_enabled = true;
+      var saved_envs    = [];
 
       function assemblePayload(purpose) {
         var test_env = {}
@@ -393,10 +395,29 @@
         login_fields.style.display = login_fields.style.display != 'none' ? 'none' : '';
       }
 
+      window.addEventListener("DOMContentLoaded", function() {
+
+        var url     = "/test-list";
+        var client  = new XMLHttpRequest();
+
+        client.onreadystatechange = function() {
+          if (client.readyState == 4 && client.status == 200) {
+            saved_envs = JSON.parse(client.responseText);
+          }
+        }
+
+        client.open("GET", url, true);
+        client.send();
+      }, false);
+
+
       var new_test_name = document.getElementById('new-test-name');
-      new_test_name.addEventListener('input', function()
-      {
-        console.log('input changed to: ', new_test_name.value);
+      new_test_name.addEventListener('input', function() {
+        if ( saved_envs.indexOf( new_test_name.value + '.json' ) > -1 ) {
+          document.getElementById('save-msg').innerHTML = "Will overwrite existing save!";
+        } else {
+          document.getElementById('save-msg').innerHTML = " ";
+        }
       });
 
     </script>
