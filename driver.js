@@ -1,3 +1,5 @@
+"use strict"
+
 var fs        = require("fs");
 var async     = require("async");
 
@@ -6,8 +8,9 @@ var PNGDiff   = require("png-diff");
 var colors    = require("colors");
 var sleep     = require("sleep")
 
-var setup     = require(__dirname + "/setup");
-var render    = require(__dirname + "/render");
+var setup     = require(__dirname + "/setup.js");
+var render    = require(__dirname + "/render.js");
+var logger    = require(__dirname + '/logger.js');
 
 
 function run(body, done) {
@@ -17,8 +20,8 @@ function run(body, done) {
 
   // Test Variables
   var cur_build     = body.build || 'build not specified';
-  var log_stamp     = 'Time : ' + (new Date).toISOString() + '\nBuild : ' + (cur_build || 'build not specified');
-  var capabilities  = { 'browserName' : body.browser, 'chromeOptions': { args: ['--test-type'] }, 'phantomjs.cli.args': ['--ignore-ssl-errors=true',  '--web-security=false'] };
+  var time_stamp    = (new Date).toISOString();
+  var capabilities  = { 'browserName' : body.browser, 'chromeOptions': { args: ['--test-type'] }, 'phantomjs.cli.args': ['--ignore-ssl-errors=true', '--web-security=false'], 'phantomjs.binary.path' : './node_modules/phantomjs/bin/phantomjs' };
   var results       = [];
   var waiting       = 0;
   var status        = {'pass_count':0, 'fail_count':0, 'na_count':0, 'error_count':0, 'resolved_count':0, 'total':0}
@@ -31,9 +34,11 @@ function run(body, done) {
   if (body.browser == "chrome") {
     var browser_height  = body.height + CHROME_OFFSET_H;
     var browser_width   = body.width;
+    var capabilities  = { 'browserName' : body.browser, 'chromeOptions': { args: ['--test-type'] } };
   } else {
     var browser_height  = body.height;
     var browser_width   = body.width;
+    var capabilities  = { 'browserName' : body.browser, 'phantomjs.cli.args': ['--ignore-ssl-errors=true', '--web-security=false'], 'phantomjs.binary.path' : './node_modules/phantomjs/bin/phantomjs' };
   }
 
 
@@ -44,22 +49,35 @@ function run(body, done) {
 
   driver.manage().window().setSize(parseInt(browser_width), parseInt(browser_height));
 
+
   // Login iff login parameters specified
   if (body.login_enabled) {
-    driver.get(body.protocol + body.url + body.login_urn).then(function() {
-    driver.sleep(1000);
-    driver.findElement(webdriver.By.name(body.usr_val)).sendKeys(body.usr).then(function() {
-      driver.findElement(webdriver.By.name(body.pwd_val)).sendKeys(body.pwd).then(function() {
-          driver.sleep(1000);
-          driver.findElement(webdriver.By.id(body.login_btn)).click().then(function() {
-              driver.sleep(1000);
-              testRunner();
-          });
+    driver.get(body.protocol + body.url + body.login_urn);
+
+    if (body.usr_attr == "name") {
+      driver.findElement(webdriver.By.name(body.usr_val)).sendKeys(body.usr);
+    } else {
+      driver.findElement(webdriver.By.id(body.usr_val)).sendKeys(body.usr);
+    }
+    if (body.pwd_attr == "name") {
+      driver.findElement(webdriver.By.name(body.pwd_val)).sendKeys(body.pwd);
+    } else {
+      driver.findElement(webdriver.By.id(body.pwd_val)).sendKeys(body.pwd);
+    }
+    sleep.sleep(1);
+    if (body.login_attr == "name") {
+      driver.findElement(webdriver.By.name(body.login_btn)).click().then( function() {
+        testRunner();
       });
-    });
-  });
+    } else {
+      driver.findElement(webdriver.By.id(body.login_btn)).click().then( function() {
+        testRunner();
+      });
+    }
   } else {
-    testRunner();
+    driver.get(body.protocol + body.url).then( function() {
+      testRunner();
+    });
   }
 
 
@@ -74,31 +92,22 @@ function run(body, done) {
   // Generate final report only after all screens have been compared
   function renderResults() {
 
-    console.log("renderResults() called");
-
     if (waiting == 0 && test_started == true) {
-
-      console.log("Test Complete");
 
       driver.quit();
       var timestamp = (new Date).toISOString();
-      status.total = status.pass_count + status.fail_count + status.na_count + status.error_count;
+      status.total  = status.pass_count + status.fail_count + status.na_count + status.error_count;
 
-      log_stamp += '\nFail : ' + status.fail_count + '\nPass : ' + status.pass_count + '\nError : ' + status.error_count + '\nN/A : ' + status.na_count + '\nResolved : ' + status.resolved_count + '\n-----';
-      fs.appendFile('executions.log', log_stamp + '\n', function (err) {
-        if (err) console.log('Error appending version to execution log ' + err);
-      });
-
-      run_details = [results, timestamp, cur_build, status];
+      logger.appendLog(status, time_stamp, cur_build, body.browser);
+      
+      var run_details = [results, timestamp, cur_build, status];
       return done(run_details);
     }
   }
 
 
   // Collect and Compare screens
-  function collectScreen(urn, renderResults) { //renderResults()
-
-    console.log("collectScreens() called")
+  function collectScreen(urn, renderResults) {
 
     waiting ++;
     test_started = true;
@@ -125,7 +134,7 @@ function run(body, done) {
 
       writeScreenshot(data, uri_safe + '.png');
 
-      // TODO: Phantonjs is too fast. Compares screenshots before they're written
+      // TODO: Phantomjs is too fast. Compares screenshots before they're written
       // Remove this sleep and make writeScreenshot blocking for all browsers
       if (body.browser == "phantomjs") {
         sleep.sleep(2);
@@ -138,7 +147,7 @@ function run(body, done) {
       var new_screenshot  = curr_dir + uri_safe + '.png';
       var diff_screenshot = diff_dir + uri_safe + '.png';
 
-      testResult      = {};
+      var testResult  = {};
       testResult.img1 = '/assets/images/screenshots/old/' + uri_safe + '.png';
       testResult.img2 = '/assets/images/screenshots/new/' + uri_safe + '.png';
       testResult.diff = '/assets/images/screenshots/results/' + uri_safe + '.png';
@@ -147,7 +156,7 @@ function run(body, done) {
       fs.exists(old_screenshot, function(exists) {
 
         if (exists) {
-          PNGDiff.outputDiff(old_screenshot, new_screenshot, diff_screenshot, function(err, diffMetric) {
+          PNGDiff.outputDiff(new_screenshot, old_screenshot, diff_screenshot, function(err, diffMetric) {
             if (err) {
               console.log("Result: \n\t" + "Error comparing screenshots ".red + err);
               testResult.result = 'ERROR';
