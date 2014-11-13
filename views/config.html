@@ -41,7 +41,7 @@
           <input class="form-control form-field-small" id="height" type="number" min="1" max="9999" style="text-align:center" value="{{config.height}}">
         </div>
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Browser<span class="required">*</span></label>
-        <select class="form-control form-field-small" id="browser" name="browser" value={{config.browser}}>
+        <select class="form-control form-field-small" id="browser" name="browser" value="{{config.browser}}">
             <option>chrome</option>
             <option>phantomjs</option>
         </select>
@@ -120,7 +120,7 @@
         </div>
         <div class="form-row">
           <label class="form-label" style="display:inline-block; width:150px; text-align:right;" tooltip="Find login button by name or by id ?">Login Btn Attr<span class="required">*</span></label>
-          <select class="form-control form-field-small" id="cred_btn_attr" name="cred_btn_attr" value="{{config.btn_attr}}">
+          <select class="form-control form-field-small" id="cred_btn_attr" name="cred_btn_attr" value="{{config.login_attr}}">
             <option>name</option>
             <option>id</option>
           </select>
@@ -161,6 +161,7 @@
             <h4><strong>Collecting Screenshots...</strong></h4>
             <p>Hang tight, this could take a while</p>
             <div id="content"></div>
+            <div id="execution-msg" style="color:red"></div>
           </div>
       </div>
       <!-- END TEST EXECUTION -->
@@ -169,7 +170,7 @@
       <div class="centered" id="modal-save" tabindex="-1" role="dialog" style="display:none; z-index:11">
         <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
           <h4><strong>Save Environment...</strong></h4>
-          <input id="new-test-name" style="display:inline-block; float:none; width:300px;" placeholder="Test Name">
+          <input id="new-test-name" style="display:inline-block; float:none; width:300px;" placeholder="Environment Name">
           <div id="save-msg" style="color:red"></div>
           <div style="margin-top:10px; margin-bottom:10px; text-align:center">
             <button id="save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="save_test()">Save Env</button>
@@ -202,6 +203,8 @@
       var urn_count     = 0;
       var login_enabled = true;
       var saved_envs    = [];
+      var save_msg      = document.getElementById('save-msg');
+      var execution_msg = document.getElementById('execution-msg');
 
       function assemblePayload(purpose) {
         var test_env = {}
@@ -216,7 +219,7 @@
         test_env.height   = document.getElementById('height').value;
         test_env.protocol = document.getElementById('protocol').value;
         test_env.url      = document.getElementById('url').value;
-        test_env.urn      = []
+        test_env.urn      = [];
 
         // Login Vars
         test_env.login_enabled = login_enabled;
@@ -266,7 +269,7 @@
           if (client.readyState == 4 && client.status == 200) {
             window.location.replace("/");
           } else if (client.readyState == 4) {
-            alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+            execution_msg.innerHTML = "Unknown Error. Please reload the page.";
           }
         }
 
@@ -297,19 +300,23 @@
       }
 
       function save_test() {
-        var url     = "/save-test";
-        var payload = assemblePayload("save");
-        var data    = JSON.stringify(payload);
-        var client  = new XMLHttpRequest();
-
-        client.open("POST", url, false);
-        client.setRequestHeader("Content-Type", "application/json");
-        client.send(data);
-
-        if (client.status == 200) {
-          window.location.replace("/config");
+        if (document.getElementById('new-test-name').value == "") {
+          save_msg.innerHTML = "Name cannot be empty!";
         } else {
-          alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+          var url     = "/save-test";
+          var payload = assemblePayload("save");
+          var data    = JSON.stringify(payload);
+          var client  = new XMLHttpRequest();
+
+          client.open("POST", url, false);
+          client.setRequestHeader("Content-Type", "application/json");
+          client.send(data);
+
+          if (client.status == 200) {
+            window.location.replace("/test-list/" + document.getElementById('new-test-name').value + ".json");
+          } else {
+            save_msg.innerHTML = "Unknown Error :(";
+          }
         }
       }
 
@@ -395,7 +402,13 @@
         login_fields.style.display = login_fields.style.display != 'none' ? 'none' : '';
       }
 
+      // On page load
       window.addEventListener("DOMContentLoaded", function() {
+
+        document.getElementById('browser').value = "{{config.browser}}";
+        document.getElementById('cred_usr_attr').value = "{{config.usr_attr}}";
+        document.getElementById('cred_pwd_attr').value = "{{config.pwd_attr}}";
+        document.getElementById('cred_btn_attr').value = "{{config.login_attr}}";
 
         var url     = "/test-list";
         var client  = new XMLHttpRequest();
@@ -414,9 +427,9 @@
       var new_test_name = document.getElementById('new-test-name');
       new_test_name.addEventListener('input', function() {
         if ( saved_envs.indexOf( new_test_name.value + '.json' ) > -1 ) {
-          document.getElementById('save-msg').innerHTML = "Will overwrite existing save!";
+          save_msg.innerHTML = "Will overwrite existing save!";
         } else {
-          document.getElementById('save-msg').innerHTML = " ";
+          save_msg.innerHTML = "";
         }
       });
 
