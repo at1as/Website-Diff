@@ -27,7 +27,8 @@
 
       <div id="run-details" style="text-align:center">
         <b>Generated: </b><i>{{time}}</i><br/>
-        <b>Build: </b><i>{{build}}</i>
+        <b>Build: </b><i>{{build}}</i><br/>
+        <b>Browser: </b><i>{{browser}}</i>
       </div>
     </div>
     <div id="run-details" style="margin-top:10px; padding:5px; margin-bottom:40px;">
@@ -197,10 +198,6 @@
             window.location.replace("/report");
         else
             alert("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
-      }
-
-      window.onload = function() {
-        updatePercent();
       }
 
       window.addEventListener("DOMContentLoaded", function() {
