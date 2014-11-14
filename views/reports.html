@@ -26,9 +26,7 @@
 
     <div id="report-content">
       <pre style="max-height:350px; overflow-y:scroll; line-height:1.00;">
-        {% for log_entry in log_entries %}
-          {{log_entry}}
-        {% endfor %}
+{{JSON.stringify(log_entries.log, undefined, 2)}}
       </pre>
     </div>
 

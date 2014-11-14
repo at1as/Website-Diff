@@ -52,8 +52,34 @@ function run(body, done) {
 
   // Login iff login parameters specified
   if (body.login_enabled) {
-    driver.get(body.protocol + body.url + body.login_urn);
+    /*
+    driver.get(body.protocol + body.url + body.login_urn, function(status) {
+      setTimeout(function() {
+        if (body.usr_attr == "name") {
+          driver.findElement(webdriver.By.name(body.usr_val)).sendKeys(body.usr);
+        } else {
+          driver.findElement(webdriver.By.id(body.usr_val)).sendKeys(body.usr);
+        }
+        if (body.pwd_attr == "name") {
+          driver.findElement(webdriver.By.name(body.pwd_val)).sendKeys(body.pwd);
+        } else {
+          driver.findElement(webdriver.By.id(body.pwd_val)).sendKeys(body.pwd);
+        }
+        sleep.sleep(1);
+        if (body.login_attr == "name") {
+          driver.findElement(webdriver.By.name(body.login_btn)).click().then( function() {
+            testRunner();
+          });
+        } else {
+          driver.findElement(webdriver.By.id(body.login_btn)).click().then( function() {
+            testRunner();
+          })
+        }
+      }, 1000);
+    });
+    */
 
+    driver.get(body.protocol + body.url + body.login_urn);
     if (body.usr_attr == "name") {
       driver.findElement(webdriver.By.name(body.usr_val)).sendKeys(body.usr);
     } else {
@@ -99,7 +125,7 @@ function run(body, done) {
       status.total  = status.pass_count + status.fail_count + status.na_count + status.error_count;
 
       logger.appendLog(status, time_stamp, cur_build, body.browser);
-      
+
       var run_details = [results, timestamp, cur_build, status];
       return done(run_details);
     }

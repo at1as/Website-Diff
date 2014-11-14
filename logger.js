@@ -1,19 +1,37 @@
 var fs = require('fs');
 
 function appendLog(status, time_stamp, build_number, browser) {
-  var log_stamp =   'Time : ' + time_stamp +
-                    '\nBuild : ' + build_number +
-                    '\nBrowser : ' + browser +
-                    '\nFail : ' + status.fail_count +
-                    '\nPass : ' + status.pass_count +
-                    '\nError : ' + status.error_count +
-                    '\nN/A : ' + status.na_count +
-                    '\nResolved : ' + status.resolved_count +
-                    '\n-----';
+  var log_stamp = { "Time" : time_stamp,
+                    "Build" : build_number,
+                    "Browser" : browser,
+                    "Fail" : status.fail_count,
+                    "Pass" : status.pass_count,
+                    "Error" : status.error_count,
+                    "N/A" : status.na_count,
+                    "Resolved" : status.resolved_count  }
 
-  fs.appendFile('executions.log', log_stamp + '\n', function (err) {
-    if (err) console.log('Error appending version to execution log ' + err);
+  var old_executions  = fs.readFileSync('executions.json', 'utf-8');
+  var new_executions  = JSON.parse(old_executions);
+  new_executions.log.unshift(log_stamp);
+
+  fs.writeFile('executions.json', JSON.stringify(new_executions), function(err) {
+    if (err) console.log('Error appending last run to executions.json ' + err);
   });
 }
 
-module.exports.appendLog = appendLog;
+
+function editLogEntry() {
+  var old_executions  = fs.readFileSync('executions.json', 'utf-8');
+  var new_executions  = JSON.parse(old_executions);
+
+  new_executions.log[new_executions.log.length - 1].Resolved++;
+  new_executions.log[new_executions.log.length - 1].Fail--;
+
+  fs.writeFile('executions.json', JSON.stringify(new_executions), function(err) {
+    if (err) console.log('Error updating last entry in executions.json ' + err);
+  });
+}
+
+
+module.exports.appendLog      = appendLog;
+module.exports.editLogEntry   = editLogEntry;

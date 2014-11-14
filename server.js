@@ -4,12 +4,13 @@ var swig        = require('swig');
 var bodyParser  = require('body-parser');
 var fs          = require('fs');
 var mime        = require('mime');
-var render      = require(__dirname + "/render");
 
 app             = express();
 
+var render      = require(__dirname + "/render.js");
 var driver      = require(__dirname + '/driver.js');
 var image_swap  = require(__dirname + '/move.js');
+var logger      = require(__dirname + '/logger.js');
 
 
 app.engine('html', swig.renderFile);
@@ -21,7 +22,7 @@ app.disable('etag');
 
 port        = process.env.PORT || 8080;
 test_data   = [];
-base_config = {'browser':['chrome', 'phantomjs'],'width':1000,'height':1000, url:'www.google.com/', urn: ['plus']}
+base_config = {'browser':'chrome','width':1000,'height':1000, url:'', urn: []}
 report_generated = false;
 
 
@@ -62,7 +63,8 @@ app.post('/master', function (req, res) {
   test_data[3].fail_count -= 1;
   test_data[3].resolved_count += 1;
 
-  // TODO - clip last 4 lines off log file and rewrite
+  // Update Fail count in log entry
+  logger.editLogEntry();
 
   res.status(200).end();
 });
@@ -131,7 +133,7 @@ app.post('/save-test', function (req, res) {
     if (err) {
       res.render('config', { config: base_config });
     } else {
-      res.render('config', { config: JSON.parse(path) });
+      res.render('config', { config: data });
     }
   });
 });
@@ -171,23 +173,24 @@ app.get('/test-list/:env', function(req, res) {
 });
 
 
-// Read execution log
+// Read execution log (JSON)
 app.get('/reports', function (req, res) {
-  fs.readFile('./executions.log', 'utf8', function (err,data) {
+  fs.readFile('./executions.json', 'utf8', function (err,data) {
     if (err) {
       res.render('reports', { log_entries: 'Error retrieving logs' });
     }
-    res.render('reports', { log_entries: data.split("\n") });
+    res.render('reports', { log_entries: JSON.parse(data) });
   });
 });
 
 
 // Download execution log
 app.get('/execution-log', function(req, res) {
-  var file = './executions.log';
+  // TODO: Convert .json file to .log before serving?
+  var file = './executions.json';
   var mimetype = mime.lookup(file);
 
-  res.setHeader('Content-disposition', 'attachment; filename=executions.log');
+  res.setHeader('Content-disposition', 'attachment; filename=executions.json');
   res.setHeader('Content-type', mimetype);
 
   var filestream = fs.createReadStream(file);
@@ -197,13 +200,13 @@ app.get('/execution-log', function(req, res) {
 
 // Clear execution log
 app.delete('/execution-log', function(req, res) {
-  var file = './executions.log';
-  fs.writeFile(file, '', function() {
-    fs.readFile('./executions.log', 'utf8', function (err,data) {
+  var file = './executions.json';
+  fs.writeFile(file, JSON.stringify({"log" : []}), function() {
+    fs.readFile('./executions.json', 'utf8', function (err,data) {
       if (err) {
         res.render('reports', { log_entries: 'Error retrieving logs' });
       }
-      res.render('reports', { log_entries: data.split('\n') });
+        res.render('reports', { log_entries: JSON.parse(data) });
     });
   });
 });
