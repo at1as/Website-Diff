@@ -9,6 +9,7 @@ app             = express();
 
 var render      = require(__dirname + "/render.js");
 var driver      = require(__dirname + '/driver.js');
+var setup       = require(__dirname + "/setup.js");
 var image_swap  = require(__dirname + '/move.js');
 var logger      = require(__dirname + '/logger.js');
 
@@ -19,6 +20,9 @@ app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.disable('etag');
+
+setup.directories();
+setup.files();
 
 port        = process.env.PORT || 8080;
 test_data   = [];
@@ -33,6 +37,7 @@ app.get('/', function (req, res) {
     time:     test_data[1],
     build:    test_data[2],
     status:   test_data[3],
+    browser:  test_data[4],
     executed: report_generated
   });
 });
@@ -45,6 +50,7 @@ app.get('/report', function (req, res) {
     time:     test_data[1],
     build:    test_data[2],
     status:   test_data[3],
+    browser:  test_data[4],
     executed: report_generated
   });
 });
@@ -113,6 +119,7 @@ app.post('/execute', function (req, res) {
       time:     done[1],
       build:    done[2],
       status:   done[3],
+      browser:  done[4],
       executed: true
     });
   });
@@ -156,20 +163,14 @@ app.get('/test-list', function(req, res) {
 app.get('/test-list/:env', function(req, res) {
 
   var path = './saved-env/' + req.params.env;
-  var loaded_env = fs.readFileSync(path, 'utf8');
 
-  res.render('config', { config: JSON.parse(loaded_env) });
-
-  /*
-  fs.readFileSync(path, 'utf8', function (err, data) {
+  fs.readFile(path, 'utf8', function (err, data) {
     if (err) {
-      console.log("HELLO2");
       res.render('config', { config: base_config });
     } else {
-      console.log("HELLO");
-      res.render('config', { config: JSON.parse(path) });
+      res.render('config', { config: JSON.parse(data) });
     }
-  });*/
+  });
 });
 
 
@@ -231,6 +232,8 @@ app.delete('/screens', function(req, res) {
   diff_files.forEach( function(file) {
     fs.unlink(screens_path_diff + file);
   });
+
+  report_generated = false;
 
   res.status(200).end();
 });

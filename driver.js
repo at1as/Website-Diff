@@ -15,9 +15,6 @@ var logger    = require(__dirname + '/logger.js');
 
 function run(body, done) {
 
-  setup.directories();
-  setup.files();
-
   // Test Variables
   var cur_build     = body.build || 'build not specified';
   var time_stamp    = (new Date).toISOString();
@@ -126,7 +123,7 @@ function run(body, done) {
 
       logger.appendLog(status, time_stamp, cur_build, body.browser);
 
-      var run_details = [results, timestamp, cur_build, status];
+      var run_details = [results, timestamp, cur_build, status, body.browser];
       return done(run_details);
     }
   }
@@ -148,7 +145,6 @@ function run(body, done) {
       var filepath = __dirname + "/public/assets/images/screenshots/new/";
       fs.writeFileSync(filepath + filename, data, 'base64');
       console.log("\nCapturing latest screens from: \n\t" + uri.green);
-      //console.log("ScreenShot Taken");
     }
 
     // Navigate Driver to URL and compare screenshots
@@ -217,7 +213,7 @@ function run(body, done) {
             if (err) console.log("Error moving captured screenshot " + err);
           });
           testResult.result = 'N/A';
-          testResult.explanation = "Nothing to compare with. Setting to master for next run.";
+          testResult.explanation = "No " + body.browser + " screens to compare with. Setting to master for next run.";
           results.push(testResult);
           status.na_count ++;
           waiting --;

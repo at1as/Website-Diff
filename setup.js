@@ -9,9 +9,9 @@ function createDir(directory) {
    }
 }
 
-function createFile(filename) {
-  if (!fs.existsSync(filename)) {
-    fs.writeFileSync(filename, '', function(err){
+function createFile(filename, content) {
+  if (!fs.exists(filename)) {
+    fs.writeFile(filename, content, function(err){
       if(err) console.log(err);
     });
   }
@@ -28,7 +28,7 @@ function createDirs() {
 }
 
 function createFiles() {
-  createFile('executions.log');
+  createFile('executions.json', JSON.stringify({"log" : []}));
 }
 
 module.exports.directory    = createDir;

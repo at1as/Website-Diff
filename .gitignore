@@ -2,7 +2,6 @@
 node_modules
 /views/output.html
 /public/assets/images/screenshots/
-executions.log
 executions.json
 phantomjsdriver.log
 /saved-env
