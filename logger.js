@@ -24,8 +24,8 @@ function editLogEntry() {
   var old_executions  = fs.readFileSync('executions.json', 'utf-8');
   var new_executions  = JSON.parse(old_executions);
 
-  new_executions.log[new_executions.log.length - 1].Resolved++;
-  new_executions.log[new_executions.log.length - 1].Fail--;
+  new_executions.log[0].Resolved++;
+  new_executions.log[0].Fail--;
 
   fs.writeFile('executions.json', JSON.stringify(new_executions), function(err) {
     if (err) console.log('Error updating last entry in executions.json ' + err);
