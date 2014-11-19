@@ -1,6 +1,6 @@
 # Website Diff
 
-Website Diff will take a screenshot of specified pages for a website (or of a product's webUI) and compare it with a prior build.
+Website Diff will take screenshots of specified URLs and compare them with previous builds. Optionally, website login credentials can be specified.
 
 HTML reports will be generated for the comparisons, flagging instances in which images don't match between builds as a failure. A third image will be generated that highlights the delta between the two, and included in the report.
 
@@ -12,18 +12,21 @@ HTML reports will be generated for the comparisons, flagging instances in which 
 
 ## Usage
 
-* clone repository
-* install dependencies
+* git clone https://github.com/at1as/Website-Diff.git
+* install dependencies (in server.js and driver.js)
 * node server.js
 
 
 ## TODO
 
-* Hardcode browser view offset (a 1000x1000 chrome driver, takes a screenshot less than 1000x1000 due to borders)
-* Update logs to reflect new master
+* phantomJS isn't waiting for JavaScript to load
 * Strip image file names of unexpected characters
+* driver.js needs a cleanup
+* cleanly stop test execution
+* compare screens only with same browser
+* console logging may no longer be necessary
 
 
 ## Disclaimer
 
-Work in progress. Expect lots of refactoring.
+Work in progress - expect refactoring.
