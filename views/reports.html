@@ -26,7 +26,12 @@
 
     <div id="report-content">
       <pre style="max-height:350px; overflow-y:scroll; line-height:1.00;">
+{% if log_entries.log.length > 0 %}
 {{JSON.stringify(log_entries.log, undefined, 2)}}
+{% else %}
+  No log entries to display.
+  Please generate a report and the results will be appended to this file.
+{% endif %}
       </pre>
     </div>
 
