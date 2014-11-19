@@ -149,7 +149,10 @@ function run(body, done) {
 
     // Navigate Driver to URL and compare screenshots
     driver.get(uri).then(function() {
-      driver.sleep(1000);
+      // Wait for AJAX load
+      driver.sleep(300);
+      // Imperfect solution to unfocus inputs (blinking cursors throw screenshot diffs)
+      driver.findElement(webdriver.By.xpath("//html//body")).click();
     });
 
     driver.takeScreenshot().then(function(data) {
