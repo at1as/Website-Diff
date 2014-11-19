@@ -6,3 +6,4 @@ executions.json
 phantomjsdriver.log
 /saved-env
 last-run.json
+browser-list.json
