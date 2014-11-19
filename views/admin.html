@@ -26,20 +26,21 @@
 
     <div id="main" style="margin: 0 auto; width:500px;overflow:hidden; margin-top:40px; margin-left:auto; margin-right:auto; vertical-align:text-middle; padding:3px;">
       <div id="button_container" style="width:225px; margin-left:auto; margin-right:auto; margin-top:40px; margin-bottom:40px; padding:5px; background-color:#888; border-radius:3px;">
-        <button id="clear-fields" class="btn btn-primary btn-block" onclick="clear_screens()">Clear All Screenshots</button>
-        <button id="delete-env" class="btn btn-primary btn-block" onclick="load_modal(); test_list()">Delete Environment</button>
+        <button id="add-rm-browser" class="btn btn-primary btn-block" onclick="browser_modal(); browser_list()">Add&nbsp;/&nbsp;Remove Browsers</button>
+        <button id="clear-fields" class="btn btn-primary btn-block" onclick="clear_screens()">Clear Screenshots</button>
+        <button id="delete-env" class="btn btn-primary btn-block" onclick="env_modal(); test_list()">Delete Environment</button>
       </div>
     </div>
 
 
     <!-- MODALS:BEGIN -->
-    <div id="backdrop" style="display:none">
+    <div id="backdrop" style="display:none" onclick="close_modals()">
 
-      <!-- MODAL: LOADING -->
-      <div class="centered" id="modal-delete" tabindex="-1" role="dialog" style="display:none; z-index:11">
+      <!-- MODAL: DELETE ENV -->
+      <div class="centered" id="modal-env" tabindex="-1" role="dialog" style="display:none; z-index:11" onclick="stopProp(event)">
         <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
-          <h4><strong>Delete Environment...</strong></h4>
-          <select class="form-control form-field-small" id="test_list" name="test_list" value="" style="width:300px;">
+          <h4 style="text-align:center"><strong>Delete Environment...</strong></h4>
+          <select class="form-control form-field-small" id="test_list" name="test_list" value="" style="width:300px; margin-top:10px; margin-bottom:10px;">
           </select>
           <div style="margin-top:10px; margin-bottom:10px; text-align:center">
             <button id="load" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="delete_env()">Delete Env</button>
@@ -47,7 +48,36 @@
           </div>
         </div>
       </div>
-      <!-- END LOADING -->
+      <!-- END DELETE ENV -->
+
+      <!-- MODAL: ADD/DELETE BROWSER -->
+      <div class="centered" id="modal-browsers" tabindex="-1" role="dialog" style="display:none; z-index:11" onclick="stopProp(event)">
+        <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
+          <h4 style="text-align:center"><strong>Add / Remove Browsers...</strong></h4>
+          <div id="browsers" style="width:300px; margin-top:20px; margin-bottom:20px;">
+          </div>
+          <div style="margin-top:10px; margin-bottom:10px; text-align:center">
+            <button id="add" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="add_browser(null)">Add</button>
+            <button id="save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="update_browsers()">Save</button>
+            <button id="cancel-save" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="close_modals(); cancel_update_browser()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL: END ADD/DELETE BROWSER -->
+
+      <!-- TODO -->
+      <!-- MODAL: DELETE SCREENSHOTS -->
+      <div class="centered" id="modal-browsers" tabindex="-1" role="dialog" style="display:none; z-index:11" onclick="stopProp(event)">
+        <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
+          <h4 style="text-align:center"><strong>Delete Screenshots...</strong></h4>
+          <div style="width:300px; margin-top:20px; margin-bottom:20px;">
+          </div>
+          <div style="margin-top:10px; margin-bottom:10px; text-align:center">
+            <button id="clear_screens" class="btn btn-primary btn-block" style="width:140px; margin-left:auto; margin-right:auto;" onclick="">Delete</button>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL: END DELETE SCREENSHOTS -->
 
     </div>
     <!-- MODALS:END -->
@@ -55,14 +85,22 @@
 
     <script type="text/javascript">
 
-    function load_modal() {
-      document.getElementById('backdrop').style.display = '';
-      document.getElementById('modal-delete').style.display = '';
-    }
+    var browser_count = 0;
 
     function close_modals() {
       document.getElementById('backdrop').style.display = 'none';
-      document.getElementById('modal-delete').style.display = 'none';
+      document.getElementById('modal-env').style.display = 'none';
+      document.getElementById('modal-browsers').style.display = 'none';
+    }
+    function env_modal() {
+      document.getElementById('backdrop').style.display = '';
+      document.getElementById('modal-env').style.display = '';
+      document.getElementById('modal-browsers').style.display = 'none';
+    }
+    function browser_modal() {
+      document.getElementById('backdrop').style.display = '';
+      document.getElementById('modal-env').style.display = 'none';
+      document.getElementById('modal-browsers').style.display = '';
     }
 
     function delete_env() {
@@ -99,7 +137,84 @@
       }
     }
 
-    function clear_screens(){
+    function browser_list() {
+      var url     = "/browser-list";
+      var client  = new XMLHttpRequest();
+      client.open("GET", url, false);
+      client.send();
+      browser_list = client.responseText;
+      browser_list = JSON.parse(browser_list);
+
+      browser_count = 0;
+
+      for (var i=0; i<browser_list.length; i++) {
+        var opt = browser_list[i];
+        add_browser(opt);
+      }
+    }
+
+    function add_browser(name) {
+      if (name === null) {
+        name = "";
+      }
+      var container   = document.createElement("div");
+      container.id    = "browser-container-" + browser_count;
+
+      var input       = document.createElement("input");
+      input.id        = "browser-count-" + browser_count;
+      input.value     = name;
+      input.className = "form-control form-field-small";
+      input.spellcheck = false;
+      input.style.width  = "250px";
+
+      var rm          = document.createElement("button");
+      rm.id           = "rm_row-" + browser_count;
+      rm.className    = "btn btn-default"
+      rm.innerHTML    = "Del";
+      rm.style.verticalAlign = "inherit";
+      rm.style.fontWeight = "bold";
+      rm.setAttribute("onclick", "delete_browser(this)");
+
+      container.appendChild(input);
+      container.appendChild(rm);
+      document.getElementById('browsers').appendChild(container);
+
+      input.focus();
+
+      browser_count ++;
+    }
+
+    function delete_browser(browser) {
+      var count = browser.id[browser.id.length - 1]
+      var row_to_delete = document.getElementById("browser-container-" + count);
+      row_to_delete.parentNode.removeChild(row_to_delete);
+    }
+
+    function update_browsers() {
+      browser_list = [];
+      for(i=0; i<=browser_count; i++){
+        if (document.getElementById('browser-count-' + i) !== null && document.getElementById('browser-count-' + i).value !== ""){
+          browser_list.push(document.getElementById('browser-count-' + i).value)
+        }
+      }
+
+      var url     = "/browser-list"
+      var client  = new XMLHttpRequest();
+      client.open("POST", url, false);
+      client.setRequestHeader("Content-Type", "application/json");
+      client.send(JSON.stringify({'new_browser_list' : browser_list}));
+
+      if (client.status == 200)
+        location.reload()
+      else
+        console.log("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+    }
+
+    function cancel_update_browser() {
+      window.location.replace("/admin");
+    }
+
+    function clear_screens() {
       var url = "/screens";
       var client = new XMLHttpRequest();
 
@@ -110,6 +225,14 @@
         location.reload();
       else
         console.log("The request did not succeed!\n\nThe response status was: " + client.status + " " + client.statusText + ".");
+    }
+
+    function stopProp(event){
+      event.cancelBubble = true;
+      if(event.stopPropagation) {
+        event.stopPropagation();
+      }
+      return false;
     }
 
     </script>

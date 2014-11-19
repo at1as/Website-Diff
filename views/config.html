@@ -42,9 +42,8 @@
         </div>
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Browser<span class="required">*</span></label>
         <select class="form-control form-field-small" id="browser" name="browser" value="{{config.browser}}">
-            <option>chrome</option>
-            <option>phantomjs</option>
         </select>
+        <div id="browser_alert" style="color:red; float:right"></div>
       </div>
       <div class="form-row">
         <label class="form-label" style="display:inline-block; width:150px; text-align:right;">Protocol<span class="required">*</span></label>
@@ -158,7 +157,7 @@
       <!-- MODAL: TEST EXECUTION -->
       <div class="centered" id="modal-alert" tabindex="-1" role="dialog" style="display:none; z-index:11">
           <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
-            <h4><strong>Collecting Screenshots...</strong></h4>
+            <h4 style="text-align:center"><strong>Collecting Screenshots...</strong></h4>
             <p>Hang tight, this could take a while</p>
             <div id="content"></div>
             <div id="execution-msg" style="color:red"></div>
@@ -169,7 +168,7 @@
       <!-- MODAL: SAVING -->
       <div class="centered" id="modal-save" tabindex="-1" role="dialog" style="display:none; z-index:11">
         <div class="modal-content" style="padding-left:15px; padding-right:15px; height:100%">
-          <h4><strong>Save Environment...</strong></h4>
+          <h4 style="text-align:center"><strong>Save Environment...</strong></h4>
           <input id="new-test-name" style="display:inline-block; float:none; width:300px;" placeholder="Environment Name">
           <div id="save-msg" style="color:red"></div>
           <div style="margin-top:10px; margin-bottom:10px; text-align:center">
@@ -347,6 +346,30 @@
         window.location.replace("/test-list/" + env);
       }
 
+      function browser_list() {
+        var url     = "/browser-list";
+        var client  = new XMLHttpRequest();
+        client.open("GET", url, false);
+        client.send();
+        browser_list = client.responseText;
+        browser_list = JSON.parse(browser_list);
+
+        var browser_select = document.getElementById("browser");
+
+        // Populate browser drop-down with available browsers
+        for(i=0; i<browser_list.length; i++) {
+          var option  = document.createElement("option");
+          option.text = browser_list[i];
+          browser_select.add(option);
+        }
+        // If there are no browsers added, do not allow test to run
+        if (browser_list.length == 0) {
+          alert("TRUE");
+          document.getElementById("browser_alert").innerHTML = "Please add a browser in Admin -> Add / Remove browser";
+          document.getElementById("execute").style.display = 'none';
+        }
+      }
+
       function modal_toggle() {
 
         var backdrop = document.getElementById('backdrop');
@@ -405,6 +428,7 @@
       // On page load
       window.addEventListener("DOMContentLoaded", function() {
 
+        browser_list();
         document.getElementById('browser').value = "{{config.browser}}";
         document.getElementById('cred_usr_attr').value = "{{config.usr_attr}}";
         document.getElementById('cred_pwd_attr').value = "{{config.pwd_attr}}";

@@ -4,6 +4,7 @@ var swig        = require('swig');
 var bodyParser  = require('body-parser');
 var fs          = require('fs');
 var mime        = require('mime');
+var _           = require('underscore');
 
 app             = express();
 
@@ -15,19 +16,31 @@ var logger      = require(__dirname + '/logger.js');
 
 
 app.engine('html', swig.renderFile);
+app.set('api_version', 'v1.0');
+app.set('port', process.env.PORT || 8080);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.disable('etag');
 
-setup.directories();
-setup.files();
 
-port        = process.env.PORT || 8080;
+PROJECT_URL = 'https://github.com/at1as/Website-Diff';
+BROWSERS    = ['chrome', 'phantomjs'];
 test_data   = [];
 base_config = {'browser':'chrome','width':1000,'height':1000, url:'', urn: []}
 report_generated = false;
+
+setup.directories();
+setup.files();
+
+
+// Return API Version
+app.get('/version', function (req, res) {
+    env_details = { 'API Version' : app.get('api_version'),
+                    'Docs'        : PROJECT_URL }
+    res.send(env_details);
+});
 
 
 // Load configuration page on start
@@ -146,6 +159,32 @@ app.post('/save-test', function (req, res) {
 });
 
 
+// Return list of browsers
+app.get('/browser-list', function(req, res) {
+  var browser_list = fs.readFileSync('./browser-list.json');
+  res.send(JSON.parse(browser_list).browsers);
+});
+
+
+// Update list of browsers
+app.post('/browser-list', function(req, res) {
+
+  var old_browser_list  = JSON.parse(fs.readFileSync('./browser-list.json'));
+  var browser_list      = _.clone(old_browser_list);
+  browser_list.browsers = req.body.new_browser_list;
+
+  // Create screenshot folders for added browsers
+  var added_browsers    = _.difference(browser_list.browsers, old_browser_list.browsers);
+  _.each(added_browsers, function(browser){
+    setup.screensDir(browser);
+  });
+
+  // Save new browser list
+  fs.writeFileSync('./browser-list.json', JSON.stringify(browser_list));
+  res.status(200).end();
+});
+
+
 // Return list of saved test environments
 app.get('/test-list', function(req, res) {
   var file_list = fs.readdirSync('./saved-env/');
@@ -187,11 +226,11 @@ app.get('/reports', function (req, res) {
 
 // Download execution log
 app.get('/execution-log', function(req, res) {
-  // TODO: Convert .json file to .log before serving?
   var file = './executions.json';
-  var mimetype = mime.lookup(file);
+  var mimetype = 'text/plain';
+  var timestamp = (new Date).toISOString();
 
-  res.setHeader('Content-disposition', 'attachment; filename=executions.json');
+  res.setHeader('Content-disposition', 'attachment; filename=executions-' + timestamp);
   res.setHeader('Content-type', mimetype);
 
   var filestream = fs.createReadStream(file);
@@ -239,5 +278,6 @@ app.delete('/screens', function(req, res) {
 });
 
 
-app.listen(port);
-console.log('\nApplication Started on http://localhost:' + port +'\n');
+app.listen(app.get('port'), function() {
+  console.log('\nApplication Started on http://localhost:' + app.get('port') +'\n');
+});
