@@ -7,3 +7,6 @@ phantomjsdriver.log
 /saved-env
 last-run.json
 browser-list.json
+Vagrantfile
+bootstrap.sh
+.vagrant
