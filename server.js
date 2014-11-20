@@ -254,22 +254,42 @@ app.delete('/execution-log', function(req, res) {
 
 // Clear saved screens
 app.delete('/screens', function(req, res) {
-  var screens_path_old  = __dirname + '/public/assets/images/screenshots/old/';
-  var screens_path_new  = __dirname + '/public/assets/images/screenshots/new/';
-  var screens_path_diff = __dirname + '/public/assets/images/screenshots/results/';
 
-  var old_files   = fs.readdirSync(screens_path_old) || [];
-  var new_files   = fs.readdirSync(screens_path_new) || [];
-  var diff_files  = fs.readdirSync(screens_path_diff) || [];
+  function getDirectories() {
+    return fs.readdirSync(__dirname + '/public/assets/images/screenshots/old/').filter(function (file) {
+      return fs.statSync(__dirname + '/public/assets/images/screenshots/old/' + file).isDirectory();
+    });
+  }
 
-  old_files.forEach( function(file) {
-    fs.unlink(screens_path_old + file);
-  });
-  new_files.forEach( function(file) {
-    fs.unlink(screens_path_new + file);
-  });
-  diff_files.forEach( function(file) {
-    fs.unlink(screens_path_diff + file);
+  function dirfiles(directory_path) {
+    if (fs.existsSync(directory_path)) {
+      return fs.readdirSync(directory_path) || [];
+    } else {
+      return [];
+    }
+  }
+
+  var subdirs = getDirectories();
+
+  subdirs.forEach( function(subdir) {
+
+    var screens_path_old  = __dirname + '/public/assets/images/screenshots/old/' + subdir + '/';
+    var screens_path_new  = __dirname + '/public/assets/images/screenshots/new/' + subdir + '/';
+    var screens_path_diff = __dirname + '/public/assets/images/screenshots/results/' + subdir + '/';
+
+    old_files   = dirfiles(screens_path_old);
+    new_files   = dirfiles(screens_path_new);
+    diff_files  = dirfiles(screens_path_diff);
+
+    old_files.forEach( function(file) {
+      fs.unlinkSync(screens_path_old + file);
+    });
+    new_files.forEach( function(file) {
+      fs.unlinkSync(screens_path_new + file);
+    });
+    diff_files.forEach( function(file) {
+      fs.unlinkSync(screens_path_diff + file);
+    });
   });
 
   report_generated = false;

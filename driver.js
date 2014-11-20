@@ -41,6 +41,7 @@ function run(body, done) {
 
   // Spawn Driver
   var driver =  new webdriver.Builder().
+                usingServer().
                 withCapabilities(capabilities).
                 build();
 
@@ -142,21 +143,19 @@ function run(body, done) {
     // Collect Screenshots
     function writeScreenshot(data, name) {
       var filename = name;
-      var filepath = __dirname + "/public/assets/images/screenshots/new/";
+      var filepath = __dirname + '/public/assets/images/screenshots/new/' + body.browser + '/';
       fs.writeFileSync(filepath + filename, data, 'base64');
-      console.log("\nCapturing latest screens from: \n\t" + uri.green);
+      console.log("\nCapturing latest screens from:\t" + uri.green);
     }
 
-    // Navigate Driver to URL and compare screenshots
     driver.get(uri).then(function() {
-      // Wait for AJAX load
+      // Wait for AJAX load (only works for chrome)
       driver.sleep(300);
       // Imperfect solution to unfocus inputs (blinking cursors throw screenshot diffs)
       driver.findElement(webdriver.By.xpath("//html//body")).click();
     });
 
     driver.takeScreenshot().then(function(data) {
-
       writeScreenshot(data, uri_safe + '.png');
 
       // TODO: Phantomjs is too fast. Compares screenshots before they're written
@@ -165,17 +164,17 @@ function run(body, done) {
         sleep.sleep(2);
       }
 
-      var prev_dir  = __dirname + '/public/assets/images/screenshots/old/';
-      var curr_dir  = __dirname + '/public/assets/images/screenshots/new/';
-      var diff_dir  = __dirname + '/public/assets/images/screenshots/results/';
+      var prev_dir  = __dirname + '/public/assets/images/screenshots/old/' + body.browser + '/';
+      var curr_dir  = __dirname + '/public/assets/images/screenshots/new/' + body.browser + '/';
+      var diff_dir  = __dirname + '/public/assets/images/screenshots/results/' + body.browser + '/';
       var old_screenshot  = prev_dir + uri_safe + '.png';
       var new_screenshot  = curr_dir + uri_safe + '.png';
       var diff_screenshot = diff_dir + uri_safe + '.png';
 
       var testResult  = {};
-      testResult.img1 = '/assets/images/screenshots/old/' + uri_safe + '.png';
-      testResult.img2 = '/assets/images/screenshots/new/' + uri_safe + '.png';
-      testResult.diff = '/assets/images/screenshots/results/' + uri_safe + '.png';
+      testResult.img1 = '/assets/images/screenshots/old/' + body.browser + '/' + uri_safe + '.png';
+      testResult.img2 = '/assets/images/screenshots/new/' + body.browser + '/' + uri_safe + '.png';
+      testResult.diff = '/assets/images/screenshots/results/' + body.browser + '/' + uri_safe + '.png';
       testResult.uri  = uri;
 
       fs.exists(old_screenshot, function(exists) {
